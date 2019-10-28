@@ -2,14 +2,9 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="3e402001-f403-471c-98d0-ed56e3b50975" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/target/classes/application.properties" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/application/Application.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/application/controllers/SlackController.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/application/controllers/UIController.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/application/slackJSON/Attachment.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/application/slackJSON/SlackResponse.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/templates/home.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/test-classes/application/ApplicationTests.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/application.properties" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -83,7 +78,12 @@
       <workItem from="1571926606285" duration="6234000" />
       <workItem from="1571935833550" duration="633000" />
       <workItem from="1572000429679" duration="653000" />
-      <workItem from="1572017343376" duration="268000" />
+      <workItem from="1572017343376" duration="1098000" />
+      <workItem from="1572088158714" duration="8000" />
+      <workItem from="1572190984951" duration="647000" />
+      <workItem from="1572259357765" duration="1521000" />
+      <workItem from="1572272948127" duration="692000" />
+      <workItem from="1572275052851" duration="600000" />
     </task>
     <servers />
   </component>
