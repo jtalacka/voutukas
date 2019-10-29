@@ -72,7 +72,6 @@ public class SlackManager {
             ViewsOpenResponse apiResponse = slack.methods(token).viewsOpen(req -> req
                     .view(view)
                     .triggerId(triggerId));
-
             System.out.println(apiResponse);
         } catch (IOException e) {
             e.printStackTrace();
