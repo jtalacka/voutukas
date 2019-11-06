@@ -1,5 +1,6 @@
 package application.business;
 
+import application.models.CreatePollOptions;
 import com.github.seratch.jslack.Slack;
 import com.github.seratch.jslack.api.methods.SlackApiException;
 import com.github.seratch.jslack.api.model.block.InputBlock;
@@ -8,46 +9,53 @@ import com.github.seratch.jslack.api.model.block.SectionBlock;
 import com.github.seratch.jslack.api.model.block.composition.MarkdownTextObject;
 import com.github.seratch.jslack.api.model.block.composition.OptionObject;
 import com.github.seratch.jslack.api.model.block.composition.PlainTextObject;
-import com.github.seratch.jslack.api.model.block.composition.TextObject;
 import com.github.seratch.jslack.api.model.block.element.PlainTextInputElement;
 import com.github.seratch.jslack.api.model.block.element.StaticSelectElement;
-import com.github.seratch.jslack.api.model.view.View;
-import com.github.seratch.jslack.api.model.view.ViewClose;
-import com.github.seratch.jslack.api.model.view.ViewSubmit;
-import com.github.seratch.jslack.api.model.view.ViewTitle;
+import com.github.seratch.jslack.api.model.view.*;
 import com.github.seratch.jslack.app_backend.interactive_messages.payload.BlockActionPayload;
 import com.github.seratch.jslack.app_backend.views.payload.ViewSubmissionPayload;
 import com.github.seratch.jslack.app_backend.views.response.ViewSubmissionResponse;
 import com.github.seratch.jslack.common.json.GsonFactory;
-import com.google.gson.Gson;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 public class SlackManager {
 
     private Slack slack;
     private String token;
-    private ModalManager modalManager;
 
+    //Slack action types
     public static final String ACTION_BLOCK_ACTION = "block_actions";
     public static final String ACTION_MESSAGE_ACTIONS = "message_actions";
     public static final String ACTION_VIEW_SUBMISSION = "view_submission";
     public static final String ACTION_VIEW_CLOSED = "view_closed";
 
+    //Block Action ID's
     private final String QUESTION_INPUT_ACTION_ID = "question_action";
-    private final String QUESTION_INPUT_ID = "question_input";
 
+    //Block identification ID's
+    private final String BLOCK_ID_QUESTION_INPUT = "question_input";
+    private final String BLOCK_ID_SELECT_ANONYMOUS = "select_anonymous";
+    private final String BLOCK_ID_SELECT_MULTIVOTE = "select_multivote";
+    private final String BLOCK_ID_SELECT_ALLOW_USERS_TO_ADD_OPTIONS = "select_allow_users_to_add";
+
+    //Block interaction action ID's
     private final String OPTIONS_COUNT_INPUT_ACTION_ID = "updated_question_count";
-    private final String CALLBACK_MODAL_CREATE_POLL = "callback_create_poll";
 
+    //Modal submission Callbacks
+    private final String CALLBACK_MODAL_CREATE_POLL = "callback_create_poll";
+    private final String CALLBACK_MODAL_SELECT_OPTIONS = "callback_select_options";
+
+    //Constants
     private final int MAXIMUM_POLL_OPTIONS_COUNT = 10;
+    private final String ENABLE_SELECT_VALUE = "Enable";
+    private final String ENABLE_SELECT_TEXT = "Enable";
+    private  final String DISABLE_SELECT_VALUE = "Disable";
+    private  final String DISABLE_SELECT_TEXT = "Disable";
 
     public SlackManager(){
         slack = Slack.getInstance();
-        modalManager = new ModalManager();
         token = System.getenv("SLACK_API_ACCESS_TOKEN");
     }
 
@@ -59,7 +67,7 @@ public class SlackManager {
                         .actionId(QUESTION_INPUT_ACTION_ID)
                         .placeholder(PlainTextObject.builder().text("Your question goes here").build())
                         .build())
-                .blockId(QUESTION_INPUT_ID)
+                .blockId(BLOCK_ID_QUESTION_INPUT)
                 .build();
 
         // Section with options count select
@@ -76,6 +84,7 @@ public class SlackManager {
                         StaticSelectElement.builder()
                                 .actionId(OPTIONS_COUNT_INPUT_ACTION_ID)
                                 .options(questionCountSelectOptions)
+                                /*.initialOption(questionCountSelectOptions.get(0))*/
                                 .build())
                 .build();
 
@@ -180,47 +189,96 @@ public class SlackManager {
 
     public String handleViewSubmission(String jsonPayload){
         ViewSubmissionPayload payload = GsonFactory.createSnakeCase().fromJson(jsonPayload, ViewSubmissionPayload.class);
+        String callback = payload.getView().getCallbackId();
 
-        if(payload.getView().getCallbackId().equals(CALLBACK_MODAL_CREATE_POLL)){
-            String view = "{\n" +
-                    "    \"type\": \"modal\",\n" +
-                    "    \"title\": {\n" +
-                    "      \"type\": \"plain_text\",\n" +
-                    "      \"text\": \"Updated view\"\n" +
-                    "    },\n" +
-                    "    \"blocks\": [\n" +
-                    "      {\n" +
-                    "        \"type\": \"image\",\n" +
-                    "        \"image_url\": \"https://api.slack.com/img/a_very_cute_image_of_two_very_cute_cats.png\",\n" +
-                    "        \"alt_text\": \"Two cats being too cute\"\n" +
-                    "      },\n" +
-                    "      {\n" +
-                    "        \"type\": \"context\",\n" +
-                    "        \"elements\": [\n" +
-                    "          {\n" +
-                    "            \"type\": \"mrkdwn\",\n" +
-                    "            \"text\": \"_Two of the author's cats sit aloof from the austere challenges of modern society_\"\n" +
-                    "          }\n" +
-                    "        ]\n" +
-                    "      }\n" +
-                    "    ]\n" +
-                    "  }";
-            View vv = View.builder()
-                    .type("modal")
-                    .callbackId("create_poll_callback")
-                    .title(ViewTitle.builder().type("plain_text").text("Level 2").build())
-                    .submit(ViewSubmit.builder().type("plain_text").text("Select question options").build())
-                    .close(ViewClose.builder().type("plain_text").text("Close").build())
-                    .notifyOnClose(false)
-                    .blocks(payload.getView().getBlocks())
-                    .privateMetadata("YEEEEEEEEEEEEEEEEEEEET")
+        if(callback.equals(CALLBACK_MODAL_CREATE_POLL)){
+            LayoutBlock selectAnonymous = InputBlock.builder()
+                    .blockId(BLOCK_ID_SELECT_ANONYMOUS)
+                    .label(PlainTextObject.builder().text("Make votes anonymous").build())
+                    .element(
+                            StaticSelectElement.builder()
+                                    .options(Arrays.asList(
+                                            OptionObject.builder().text(PlainTextObject.builder().text(ENABLE_SELECT_TEXT).build()).value(ENABLE_SELECT_VALUE).build(),
+                                            OptionObject.builder().text(PlainTextObject.builder().text(DISABLE_SELECT_TEXT).build()).value(DISABLE_SELECT_VALUE).build()
+                                    ))
+                                    .initialOption(OptionObject.builder().text(PlainTextObject.builder().text(DISABLE_SELECT_TEXT).build()).value(DISABLE_SELECT_VALUE).build())
+                                    .build()
+                    )
                     .build();
 
-            ViewSubmissionResponse response = ViewSubmissionResponse.builder().responseAction("push").view(vv).build();
+            LayoutBlock selectMultivote = InputBlock.builder()
+                    .blockId(BLOCK_ID_SELECT_MULTIVOTE)
+                    .label(PlainTextObject.builder().text("Allow users to vote multiple times").build())
+                    .element(
+                            StaticSelectElement.builder()
+                                    .options(Arrays.asList(
+                                            OptionObject.builder().text(PlainTextObject.builder().text(ENABLE_SELECT_TEXT).build()).value(ENABLE_SELECT_VALUE).build(),
+                                            OptionObject.builder().text(PlainTextObject.builder().text(DISABLE_SELECT_TEXT).build()).value(DISABLE_SELECT_VALUE).build()
+                                    ))
+                                    .initialOption(OptionObject.builder().text(PlainTextObject.builder().text(DISABLE_SELECT_TEXT).build()).value(DISABLE_SELECT_VALUE).build())
+                                    .build()
+                    )
+                    .build();
+
+            LayoutBlock selectAllowUsersToAdd = InputBlock.builder()
+                    .blockId(BLOCK_ID_SELECT_ALLOW_USERS_TO_ADD_OPTIONS)
+                    .label(PlainTextObject.builder().text("Allow users to add answer options").build())
+                    .element(
+                            StaticSelectElement.builder()
+                                    .options(Arrays.asList(
+                                            OptionObject.builder().text(PlainTextObject.builder().text(ENABLE_SELECT_TEXT).build()).value(ENABLE_SELECT_VALUE).build(),
+                                            OptionObject.builder().text(PlainTextObject.builder().text(DISABLE_SELECT_TEXT).build()).value(DISABLE_SELECT_VALUE).build()
+                                    ))
+                                    .initialOption(OptionObject.builder().text(PlainTextObject.builder().text(DISABLE_SELECT_TEXT).build()).value(DISABLE_SELECT_VALUE).build())
+                                    .build()
+                    )
+                    .build();
+
+            View view = View.builder()
+                    .type("modal")
+                    .callbackId(CALLBACK_MODAL_SELECT_OPTIONS)
+                    .title(ViewTitle.builder().type("plain_text").text("Additional options").build())
+                    .submit(ViewSubmit.builder().type("plain_text").text("Post poll").build())
+                    .close(ViewClose.builder().type("plain_text").text("Back").build())
+                    .notifyOnClose(false)
+                    .blocks(Arrays.asList(selectAnonymous, selectMultivote, selectAllowUsersToAdd))
+                    .privateMetadata(GsonFactory.createSnakeCase().toJson(payload.getView().getState(), ViewState.class))
+                    .build();
+
+            ViewSubmissionResponse response = ViewSubmissionResponse.builder().responseAction("push").view(view).build();
+            return GsonFactory.createSnakeCase().toJson(response, ViewSubmissionResponse.class);
+        }
+        else if(callback.equals(CALLBACK_MODAL_SELECT_OPTIONS)){
+            CreatePollOptions pollOptions = new CreatePollOptions();
+
+            // State from previous view holding question with options
+            ViewState prevState = GsonFactory.createSnakeCase().fromJson(payload.getView().getPrivateMetadata(), ViewState.class);
+
+            // A list of all value objects
+            List<Map<String, ViewState.Value>> optionObjectList = new LinkedList<>(prevState.getValues().values());
+
+            // Question string
+            String inputQuestion = optionObjectList.get(0).values().stream().findFirst().get().getValue();
+            optionObjectList.remove(0);
+
+            // Add question options to the list
+            List<String> questionOptions = new LinkedList<>();
+            optionObjectList.forEach(
+                    item -> questionOptions.add(item.values().stream().findFirst().get().getValue())
+            );
+
+            //Current state with poll options
+            List<Map<String, ViewState.Value>> currState = new LinkedList<>(payload.getView().getState().getValues().values());
+
+            if(currState.get(0).values().stream().findFirst().get().getSelectedOption().getValue().equals(ENABLE_SELECT_VALUE)) pollOptions.anonymous = true;
+            if(currState.get(1).values().stream().findFirst().get().getSelectedOption().getValue().equals(ENABLE_SELECT_VALUE)) pollOptions.multivote = true;
+            if(currState.get(2).values().stream().findFirst().get().getSelectedOption().getValue().equals(ENABLE_SELECT_VALUE)) pollOptions.allowUsersToAddOptions = true;
+
+            //Close all views after getting response
+            ViewSubmissionResponse response = ViewSubmissionResponse.builder().responseAction("clear").build();
             return GsonFactory.createSnakeCase().toJson(response, ViewSubmissionResponse.class);
         }
 
         return "";
     }
-
 }
