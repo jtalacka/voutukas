@@ -30,11 +30,9 @@ public class SlackController {
         //Appropriate response depending on the type of action
         switch(type){
             case SlackManager.ACTION_BLOCK_ACTION:
-                //BlockActionPayload payload = GsonFactory.createSnakeCase().fromJson(jsonResponse, BlockActionPayload.class);
                 return slackManager.handleBlockAction(jsonResponse);
             case SlackManager.ACTION_VIEW_SUBMISSION:
-                System.out.println("View Submitted");
-                return "";
+                return slackManager.handleViewSubmission(jsonResponse);
         }
 
         return "";
