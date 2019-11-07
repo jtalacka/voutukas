@@ -1,6 +1,7 @@
 package application.business;
 
 import application.models.CreatePollOptions;
+import LoggerLogic.Logger;
 import com.github.seratch.jslack.Slack;
 import com.github.seratch.jslack.api.methods.SlackApiException;
 import com.github.seratch.jslack.api.model.block.InputBlock;
