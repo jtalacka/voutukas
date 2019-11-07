@@ -2,12 +2,14 @@ package application.controllers;
 
 import LoggerLogic.Logger;
 import application.business.SlackManager;
-import com.github.seratch.jslack.common.json.GsonFactory;
+import com.github.seratch.jslack.app_backend.interactive_messages.payload.BlockActionPayload;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.github.seratch.jslack.common.json.*;
 
 import java.util.Map;
 
@@ -28,15 +30,13 @@ public class SlackController {
     public String onInteraction(@RequestParam("payload") String jsonResponse){
         //We check what type of response we got
         String type = GsonFactory.createSnakeCase().fromJson(jsonResponse, Map.class).get("type").toString();
-        Logger.LogIncomingPayload(jsonResponse);
+
         //Appropriate response depending on the type of action
         switch(type){
             case SlackManager.ACTION_BLOCK_ACTION:
-                //BlockActionPayload payload = GsonFactory.createSnakeCase().fromJson(jsonResponse, BlockActionPayload.class);
                 return slackManager.handleBlockAction(jsonResponse);
             case SlackManager.ACTION_VIEW_SUBMISSION:
-                Logger.LogEvent("View Submitted");
-                return "";
+                return slackManager.handleViewSubmission(jsonResponse);
         }
 
         return "";
@@ -45,14 +45,14 @@ public class SlackController {
 
         /*if(type.equals(SlackManager.ACTION_BLOCK_ACTION)){
             BlockActionPayload payload = GsonFactory.createSnakeCase().fromJson(jsonResponse, BlockActionPayload.class);
-            Logger.LogEvent("Block Action");
+            System.out.println("Block Action");
         }
         else if(type.equals(SlackManager.ACTION_VIEW_SUBMISSION)){
-            Logger.LogEvent("View Submitted");
+            System.out.println("View Submitted");
         }*/
 
         /*ViewSubmissionPayload submissionPayload = GsonFactory.createSnakeCase().fromJson(jsonResponse, ViewSubmissionPayload.class);
-        Logger.LogEvent(submissionPayload);
+        System.out.println(submissionPayload);
         View view = View.builder()
                 .type("modal")
                 .callbackId("create_poll_callback")
