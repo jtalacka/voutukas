@@ -12,7 +12,7 @@ import com.github.seratch.jslack.api.model.block.composition.PlainTextObject;
 import com.github.seratch.jslack.api.model.block.element.PlainTextInputElement;
 import com.github.seratch.jslack.api.model.block.element.StaticSelectElement;
 import com.github.seratch.jslack.api.model.view.*;
-import com.github.seratch.jslack.app_backend.interactive_messages.payload.BlockActionPayload;
+import com.github.seratch.jslack.app_backend.interactive_InlineText.payload.BlockActionPayload;
 import com.github.seratch.jslack.app_backend.views.payload.ViewSubmissionPayload;
 import com.github.seratch.jslack.app_backend.views.response.ViewSubmissionResponse;
 import com.github.seratch.jslack.common.json.GsonFactory;
@@ -47,16 +47,16 @@ public class SlackManager {
     private final String DISABLE_SELECT_TEXT = "Disable";
     private Slack slack;
     private String token;
-    private List<String> Messages;
+    private List<String> InlineText;
 
     public SlackManager() {
         slack = Slack.getInstance();
         token = System.getenv("SLACK_API_ACCESS_TOKEN");
     }
 
-    public void composeInitialModal(String triggerId, List<String> InlineMessages) {
+    public void composeInitialModal(String triggerId, List<String> InlineInlineText) {
         // Question area
-        Messages = InlineMessages;
+        InlineText = InlineInlineText;
         LayoutBlock questionBlock = InputBlock.builder()
                 .label(PlainTextObject.builder().text("Question").build())
                 .element(PlainTextInputElement.builder()
@@ -65,9 +65,9 @@ public class SlackManager {
                         .build())
                 .blockId(BLOCK_ID_QUESTION_INPUT)
                 .build();
-        if(Messages != null)
+        if(InlineText != null)
         {
-            ((InputBlock) questionBlock).setElement(PlainTextInputElement.builder().initialValue(Messages.get(0)).build());
+            ((InputBlock) questionBlock).setElement(PlainTextInputElement.builder().initialValue(InlineText.get(0)).build());
         }
 
 
@@ -93,12 +93,12 @@ public class SlackManager {
         blocks.add(questionBlock);
         blocks.add(questionCountSection);
         char identifier = 'A';
-        if(Messages != null && Messages.size() > 1)
+        if(InlineText != null && InlineText.size() > 1)
         {
-            for(String question : Messages)
+            for(String question : InlineText)
             {
-                if(Messages.indexOf(question) == 0) continue;
-                InputBlock temp = BlockBuilder(identifier,Messages.indexOf(question));
+                if(InlineText.indexOf(question) == 0) continue;
+                InputBlock temp = BlockBuilder(identifier,InlineText.indexOf(question));
                 temp.setElement(PlainTextInputElement.builder().initialValue(question).build());
                 blocks.add(temp);
             }
