@@ -18,10 +18,7 @@ import com.github.seratch.jslack.app_backend.views.response.ViewSubmissionRespon
 import com.github.seratch.jslack.common.json.GsonFactory;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class SlackManager {
 
@@ -50,14 +47,16 @@ public class SlackManager {
     private final String DISABLE_SELECT_TEXT = "Disable";
     private Slack slack;
     private String token;
+    private List<String> Messages;
 
     public SlackManager() {
         slack = Slack.getInstance();
         token = System.getenv("SLACK_API_ACCESS_TOKEN");
     }
 
-    public void composeInitialModal(String triggerId) {
+    public void composeInitialModal(String triggerId, List<String> InlineMessages) {
         // Question area
+        Messages = InlineMessages;
         LayoutBlock questionBlock = InputBlock.builder()
                 .label(PlainTextObject.builder().text("Question").build())
                 .element(PlainTextInputElement.builder()
@@ -66,6 +65,11 @@ public class SlackManager {
                         .build())
                 .blockId(BLOCK_ID_QUESTION_INPUT)
                 .build();
+        if(Messages != null)
+        {
+            ((InputBlock) questionBlock).setElement(PlainTextInputElement.builder().initialValue(Messages.get(0)).build());
+        }
+
 
         // Section with options count select
         List<OptionObject> questionCountSelectOptions = new LinkedList<>();
@@ -88,12 +92,25 @@ public class SlackManager {
         List<LayoutBlock> blocks = new LinkedList<>();
         blocks.add(questionBlock);
         blocks.add(questionCountSection);
-
-        // Add 2 input options
-        for (int i = 0; i < 2; i++) {
-            char identifier = 'A';
-            blocks.add(BlockBuilder(identifier, i));
+        char identifier = 'A';
+        if(Messages != null && Messages.size() > 1)
+        {
+            for(String question : Messages)
+            {
+                if(Messages.indexOf(question) == 0) continue;
+                InputBlock temp = BlockBuilder(identifier,Messages.indexOf(question));
+                temp.setElement(PlainTextInputElement.builder().initialValue(question).build());
+                blocks.add(temp);
+            }
         }
+        else
+        {
+            for (int i = 0; i < 2; i++) {
+
+                blocks.add(BlockBuilder(identifier, i));
+            }
+        }
+
 
         View view = View.builder()
                 .type("modal")
@@ -137,6 +154,7 @@ public class SlackManager {
         newBlocks.add(blocks.remove(0));   //Questions count select
 
         char identifier = 'A';
+
         for (int i = 0; i < inputsCount; i++) {
             if (blocks.stream().filter(c -> c instanceof InputBlock).count() > 0) {
                 newBlocks.add(blocks.remove(0));
@@ -263,4 +281,5 @@ public class SlackManager {
                         .initialOption(OptionObject.builder().text(PlainTextObject.builder().text(DISABLE_SELECT_TEXT).build()).value(DISABLE_SELECT_VALUE).build())
                         .build();
     }
+
 }
