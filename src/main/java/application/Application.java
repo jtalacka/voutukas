@@ -8,11 +8,10 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import java.io.IOException;
 
 @SpringBootApplication
-@EnableAutoConfiguration
 public class Application {
 
     public static void main(String[] args) throws IOException {
-        Logger logger = new Logger();
+       // Logger logger = new Logger();
         SpringApplication.run(Application.class, args);
     }
 }

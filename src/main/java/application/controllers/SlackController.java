@@ -22,8 +22,8 @@ public class SlackController {
     }
 
     @RequestMapping(value = "/slack/slash", method = RequestMethod.POST, consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
-    public void onSlashCommandAccepted(@RequestParam("trigger_id") String triggerId) {
-        slackManager.composeInitialModal(triggerId);
+    public void onSlashCommandAccepted(@RequestParam("trigger_id") String triggerId,@RequestParam("channel_id") String channelId) {
+        slackManager.composeInitialModal(triggerId,channelId);
     }
 
     @RequestMapping(value = "/slack/interact", method = RequestMethod.POST, consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
