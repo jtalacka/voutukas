@@ -9,7 +9,7 @@ import java.util.Set;
 public class Option {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
     @ManyToMany(fetch = FetchType.LAZY)
@@ -18,33 +18,27 @@ public class Option {
             inverseJoinColumns = { @JoinColumn(name = "option_id") })
     private Set<User> answers = new HashSet<>();
 
-    @Column(name = "poll_id")
-    private int pollId;
+    @ManyToOne
+    private Poll pollId;
+
     @Column(name = "option_text")
     private String optionText;
 
     public Option() {
     }
 
-    public Option(int pollId, String optionText) {
+    public Option(Set<User> answers, Poll pollId, String optionText) {
+        this.answers = answers;
         this.pollId = pollId;
         this.optionText = optionText;
     }
 
-    public int getPollId() {
+    public Poll getPollId() {
         return pollId;
     }
 
-    public void setPollId(int pollId) {
+    public void setPollId(Poll pollId) {
         this.pollId = pollId;
-    }
-
-    public String getOptionText() {
-        return optionText;
-    }
-
-    public void setOptionText(String optionText) {
-        this.optionText = optionText;
     }
 
     public Set<User> getAnswers() {
@@ -53,5 +47,13 @@ public class Option {
 
     public void setAnswers(Set<User> answers) {
         this.answers = answers;
+    }
+
+    public String getOptionText() {
+        return optionText;
+    }
+
+    public void setOptionText(String optionText) {
+        this.optionText = optionText;
     }
 }

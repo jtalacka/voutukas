@@ -1,36 +1,56 @@
 package application.Modals;
 
+import application.CompositeKeys.PollID;
+
 import javax.persistence.*;
 import java.util.HashSet;
 import java.util.Set;
 
 @Entity
-@Table(name = "Poll")
+@Table(name = "poll")
 public class Poll {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private int id;
+    @EmbeddedId
+    private PollID id;
 
     @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(name = "pollproperties",
-            joinColumns = { @JoinColumn(name = "poll_id") },
-            inverseJoinColumns = { @JoinColumn(name = "propertie_id") })
-    private Set<Properties> pollProperties = new HashSet<>();
+    private Set<Properties> Properties = new HashSet<>();
 
     @Column(name = "name")
     private String name;
-    @Column(name = "owner_id")
-    private int ownerId;
-    @Column(name = "slack_string_id")
-    private String slackStringId;
+
+    @ManyToOne
+    private User owner;
 
     public Poll() {}
 
-    public Poll (String name, int owenerId, String slackStringId) {
-    this.name = name;
-    this.ownerId = owenerId;
-    this.slackStringId = slackStringId;
+    public Poll(PollID id, String name, User ownerId) {
+        this.id = id;
+        this.name = name;
+        this.owner = ownerId;
+    }
+
+    public Poll(PollID id, Set<Properties> pollProperties, String name, User ownerId) {
+        this.id = id;
+        this.Properties = pollProperties;
+        this.name = name;
+        this.owner = ownerId;
+    }
+
+    public PollID getId() {
+        return id;
+    }
+
+    public void setId(PollID id) {
+        this.id = id;
+    }
+
+    public Set<Properties> getPollProperties() {
+        return Properties;
+    }
+
+    public void setPollProperties(Set<Properties> pollProperties) {
+        this.Properties = pollProperties;
     }
 
     public String getName() {
@@ -41,27 +61,11 @@ public class Poll {
         this.name = name;
     }
 
-    public int getOwnerId() {
-        return ownerId;
+    public User getOwnerId() {
+        return owner;
     }
 
-    public void setOwnerId(int ownerId) {
-        this.ownerId = ownerId;
-    }
-
-    public String getSlackStringId() {
-        return slackStringId;
-    }
-
-    public void setSlackStringId(String slackStringId) {
-        this.slackStringId = slackStringId;
-    }
-
-    public Set<Properties> getPollProperties() {
-        return pollProperties;
-    }
-
-    public void setPollProperties(Set<Properties> pollProperties) {
-        this.pollProperties = pollProperties;
+    public void setOwnerId(User ownerId) {
+        this.owner = ownerId;
     }
 }

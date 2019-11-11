@@ -9,7 +9,7 @@ import java.util.Set;
 public class User {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
     @ManyToMany(fetch = FetchType.LAZY)
@@ -21,20 +21,16 @@ public class User {
     @Column(name = "name")
     private String name;
 
-
     public User() {
     }
 
     public User(String name) {
-        name = name;
+        this.name = name;
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        name = name;
+    public User(Set<Option> answers, String name) {
+        this.answers = answers;
+        this.name = name;
     }
 
     public Set<Option> getAnswers() {
@@ -43,5 +39,13 @@ public class User {
 
     public void setAnswers(Set<Option> answers) {
         this.answers = answers;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 }
