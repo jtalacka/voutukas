@@ -2,9 +2,7 @@ package application;
 
 import LoggerLogic.Logger;
 import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import sun.rmi.runtime.Log;
 
 import java.io.IOException;
 

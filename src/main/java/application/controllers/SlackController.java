@@ -1,15 +1,12 @@
 package application.controllers;
 
-import LoggerLogic.Logger;
 import application.business.SlackManager;
-import com.github.seratch.jslack.app_backend.interactive_messages.payload.BlockActionPayload;
+import com.github.seratch.jslack.common.json.GsonFactory;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-import com.github.seratch.jslack.common.json.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -74,6 +71,11 @@ public class SlackController {
 
     private List<String> ListOfInputText(String text)
     {
+        if(text.length() > 3000)
+        {
+            //throw error to user: Message text cannot exceed 3000 characters
+            return null;
+        }
         List<String> managedText = new ArrayList<>();
         if(text.equals(""))
         {

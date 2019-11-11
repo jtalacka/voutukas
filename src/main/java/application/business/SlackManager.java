@@ -12,13 +12,16 @@ import com.github.seratch.jslack.api.model.block.composition.PlainTextObject;
 import com.github.seratch.jslack.api.model.block.element.PlainTextInputElement;
 import com.github.seratch.jslack.api.model.block.element.StaticSelectElement;
 import com.github.seratch.jslack.api.model.view.*;
-import com.github.seratch.jslack.app_backend.interactive_InlineText.payload.BlockActionPayload;
+import com.github.seratch.jslack.app_backend.interactive_messages.payload.BlockActionPayload;
 import com.github.seratch.jslack.app_backend.views.payload.ViewSubmissionPayload;
 import com.github.seratch.jslack.app_backend.views.response.ViewSubmissionResponse;
 import com.github.seratch.jslack.common.json.GsonFactory;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 public class SlackManager {
 
@@ -93,12 +96,19 @@ public class SlackManager {
         blocks.add(questionBlock);
         blocks.add(questionCountSection);
         char identifier = 'A';
-        if(InlineText != null && InlineText.size() > 1)
+        if(InlineText != null && InlineText.size() == 2)
+        {
+            InputBlock temp = BlockBuilder(identifier,0);
+            temp.setElement(PlainTextInputElement.builder().initialValue(InlineText.get(1)).build());
+            blocks.add(temp);
+            blocks.add(BlockBuilder(identifier,1));
+        }
+        else if(InlineText != null && InlineText.size() > 2)
         {
             for(String question : InlineText)
             {
                 if(InlineText.indexOf(question) == 0) continue;
-                InputBlock temp = BlockBuilder(identifier,InlineText.indexOf(question));
+                InputBlock temp = BlockBuilder(identifier,InlineText.indexOf(question) - 1);
                 temp.setElement(PlainTextInputElement.builder().initialValue(question).build());
                 blocks.add(temp);
             }
@@ -110,7 +120,6 @@ public class SlackManager {
                 blocks.add(BlockBuilder(identifier, i));
             }
         }
-
 
         View view = View.builder()
                 .type("modal")
