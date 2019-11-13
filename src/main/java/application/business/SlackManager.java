@@ -75,10 +75,10 @@ public class SlackManager {
         char identifier = 'A';
         if(InlineText != null && InlineText.size() == 2)
         {
-            InputBlock temp = BlockBuilder(identifier,0);
+            InputBlock temp = inputBlockBuilder("Option "+identifier, "option 0", "Option "+identifier);
             temp.setElement(PlainTextInputElement.builder().initialValue(InlineText.get(1)).build());
             blocks.add(temp);
-            blocks.add(BlockBuilder(identifier,1));
+            blocks.add(inputBlockBuilder("Option "+(char)(identifier+1), "option 1", "Option "+(char)(identifier+1)));
         }
         else if(InlineText != null && InlineText.size() > 2)
         {
@@ -88,6 +88,7 @@ public class SlackManager {
                 InputBlock temp = inputBlockBuilder("Option "+identifier, "option "+InlineText.indexOf(question), "Option "+identifier);
                 temp.setElement(PlainTextInputElement.builder().initialValue(question).build());
                 blocks.add(temp);
+                identifier++;
             }
         }
         else

@@ -1,6 +1,7 @@
 package application.controllers;
 
 import application.business.SlackManager;
+import com.github.seratch.jslack.common.json.GsonFactory;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
