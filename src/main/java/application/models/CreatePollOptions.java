@@ -3,7 +3,8 @@ package application.models;
 public class CreatePollOptions {
 
     public  CreatePollOptions(){
-        anonymous = multivote = allowUsersToAddOptions = false;
+        anonymous = allowUsersToAddOptions = false;
+        multivote = true;
     }
 
     public boolean anonymous;

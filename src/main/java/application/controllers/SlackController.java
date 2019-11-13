@@ -1,7 +1,6 @@
 package application.controllers;
 
 import application.business.SlackManager;
-import com.github.seratch.jslack.common.json.GsonFactory;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -15,6 +14,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
+@RequestMapping("slack")
 public class SlackController {
     private SlackManager slackManager;
 
@@ -22,12 +22,12 @@ public class SlackController {
         slackManager = new SlackManager();
     }
 
-    @RequestMapping(value = "/slack/slash", method = RequestMethod.POST, consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
-    public void onSlashCommandAccepted(@RequestParam("trigger_id") String triggerId, @RequestParam("text")String text,@RequestParam("channel_id") String channelId) {
-        slackManager.composeInitialModal(triggerId,ListOfInputText(text),channelId);
+    @RequestMapping(value = "slash", method = RequestMethod.POST, consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+    public void onSlashCommandAccepted(@RequestParam("trigger_id") String triggerId, @RequestParam("text")String text, @RequestParam("channel_id") String channelId) {
+        slackManager.composeInitialModal(triggerId, ListOfInputText(text), channelId);
     }
 
-    @RequestMapping(value = "/slack/interact", method = RequestMethod.POST, consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+    @RequestMapping(value = "interact", method = RequestMethod.POST, consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
     public String onInteraction(@RequestParam("payload") String jsonResponse){
         //We check what type of response we got
         String type = GsonFactory.createSnakeCase().fromJson(jsonResponse, Map.class).get("type").toString();
@@ -41,32 +41,6 @@ public class SlackController {
         }
 
         return "";
-
-
-
-        /*if(type.equals(SlackManager.ACTION_BLOCK_ACTION)){
-            BlockActionPayload payload = GsonFactory.createSnakeCase().fromJson(jsonResponse, BlockActionPayload.class);
-            System.out.println("Block Action");
-        }
-        else if(type.equals(SlackManager.ACTION_VIEW_SUBMISSION)){
-            System.out.println("View Submitted");
-        }*/
-
-        /*ViewSubmissionPayload submissionPayload = GsonFactory.createSnakeCase().fromJson(jsonResponse, ViewSubmissionPayload.class);
-        System.out.println(submissionPayload);
-        View view = View.builder()
-                .type("modal")
-                .callbackId("create_poll_callback")
-                .title(ViewTitle.builder().type("plain_text").text("Create a poll").build())
-                .submit(ViewSubmit.builder().type("plain_text").text("Select question options").build())
-                .close(ViewClose.builder().type("plain_text").text("Close").build())
-                .notifyOnClose(false)
-                .blocks(submissionPayload.getView().getBlocks())
-                .build();
-
-        ViewSubmissionResponse response = ViewSubmissionResponse.builder().responseAction("update").view(view).build();
-
-        return GsonFactory.createSnakeCase().toJson(response, ViewSubmissionResponse.class);*/
     }
 
     private List<String> ListOfInputText(String text)

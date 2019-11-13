@@ -3,12 +3,12 @@ package application.business;
 import application.models.CreatePollOptions;
 import com.github.seratch.jslack.Slack;
 import com.github.seratch.jslack.api.methods.SlackApiException;
-import com.github.seratch.jslack.api.model.block.InputBlock;
-import com.github.seratch.jslack.api.model.block.LayoutBlock;
-import com.github.seratch.jslack.api.model.block.SectionBlock;
+import com.github.seratch.jslack.api.model.block.*;
 import com.github.seratch.jslack.api.model.block.composition.MarkdownTextObject;
 import com.github.seratch.jslack.api.model.block.composition.OptionObject;
 import com.github.seratch.jslack.api.model.block.composition.PlainTextObject;
+import com.github.seratch.jslack.api.model.block.element.BlockElement;
+import com.github.seratch.jslack.api.model.block.element.ButtonElement;
 import com.github.seratch.jslack.api.model.block.element.PlainTextInputElement;
 import com.github.seratch.jslack.api.model.block.element.StaticSelectElement;
 import com.github.seratch.jslack.api.model.view.*;
@@ -30,28 +30,28 @@ public class SlackManager {
     public static final String ACTION_MESSAGE_ACTIONS = "message_actions";
     public static final String ACTION_VIEW_SUBMISSION = "view_submission";
     public static final String ACTION_VIEW_CLOSED = "view_closed";
+
     //Block Action ID's
-    private final String QUESTION_INPUT_ACTION_ID = "question_action";
+    private final String ACTION_ID_QUESTION_INPUT = "question_action";
+    private final String ACTION_ID_ADD_OPTION = "add_option_action";
+    private final String ACTION_ID_REMOVE_OPTION = "remove_option_action";
+
+    private final String ACTION_ID_ALLOW_USERS_TO_ADD_OPTIONS_CHECK = "allow_to_add_options_check";
+    private final String ACTION_ID_ANONYMOUS_CHECK = "anonymous_check";
+    private final String ACTION_ID_MULTI_VOTE_CHECK = "multi_vote_check";
     //Block identification ID's
     private final String BLOCK_ID_QUESTION_INPUT = "question_input";
-    private final String BLOCK_ID_SELECT_ANONYMOUS = "select_anonymous";
-    private final String BLOCK_ID_SELECT_MULTIVOTE = "select_multivote";
-    private final String BLOCK_ID_SELECT_ALLOW_USERS_TO_ADD_OPTIONS = "select_allow_users_to_add";
-    //Block interaction action ID's
-    private final String OPTIONS_COUNT_INPUT_ACTION_ID = "updated_question_count";
+    private final String BLOCK_ID_ADD_REMOVE_ACTION_BLOCK = "add_remove_action_block";
+    private final String BLOCK_ID_POLL_OPTIONS_BLOCK = "poll_options_block";
+
     //Modal submission Callbacks
     private final String CALLBACK_MODAL_CREATE_POLL = "callback_create_poll";
-    private final String CALLBACK_MODAL_SELECT_OPTIONS = "callback_select_options";
+
     //Constants
-    private final int MAXIMUM_POLL_OPTIONS_COUNT = 10;
-    private final String ENABLE_SELECT_VALUE = "Enable";
-    private final String ENABLE_SELECT_TEXT = "Enable";
-    private final String DISABLE_SELECT_VALUE = "Disable";
-    private final String DISABLE_SELECT_TEXT = "Disable";
-    private String channelId;
     private Slack slack;
     private String token;
     private List<String> InlineText;
+    private String channelId;
 
     public SlackManager() {
         slack = Slack.getInstance();
@@ -62,41 +62,16 @@ public class SlackManager {
         this.channelId=channelId;
         // Question area
         InlineText = InlineInlineText;
-        LayoutBlock questionBlock = InputBlock.builder()
-                .label(PlainTextObject.builder().text("Question").build())
-                .element(PlainTextInputElement.builder()
-                        .actionId(QUESTION_INPUT_ACTION_ID)
-                        .placeholder(PlainTextObject.builder().text("Your question goes here").build())
-                        .build())
-                .blockId(BLOCK_ID_QUESTION_INPUT)
-                .build();
+        LayoutBlock questionBlock = inputBlockBuilder("Question", ACTION_ID_QUESTION_INPUT, "Your question goes here", BLOCK_ID_QUESTION_INPUT);
+
         if(InlineText != null)
         {
             ((InputBlock) questionBlock).setElement(PlainTextInputElement.builder().initialValue(InlineText.get(0)).build());
         }
 
-
-        // Section with options count select
-        List<OptionObject> questionCountSelectOptions = new LinkedList<>();
-        for (int i = 2; i <= MAXIMUM_POLL_OPTIONS_COUNT; i++) {
-            questionCountSelectOptions.add(
-                    OptionObject.builder().text(PlainTextObject.builder().text(Integer.toString(i)).build()).value(Integer.toString(i)).build()
-            );
-        }
-
-        LayoutBlock questionCountSection = SectionBlock.builder()
-                .text(PlainTextObject.builder().text("How many options do you want?").build())
-                .accessory(
-                        StaticSelectElement.builder()
-                                .actionId(OPTIONS_COUNT_INPUT_ACTION_ID)
-                                .options(questionCountSelectOptions)
-                                /*.initialOption(questionCountSelectOptions.get(0))*/
-                                .build())
-                .build();
-
         List<LayoutBlock> blocks = new LinkedList<>();
         blocks.add(questionBlock);
-        blocks.add(questionCountSection);
+
         char identifier = 'A';
         if(InlineText != null && InlineText.size() == 2)
         {
@@ -110,7 +85,7 @@ public class SlackManager {
             for(String question : InlineText)
             {
                 if(InlineText.indexOf(question) == 0) continue;
-                InputBlock temp = BlockBuilder(identifier,InlineText.indexOf(question) - 1);
+                InputBlock temp = inputBlockBuilder("Option "+identifier, "option "+InlineText.indexOf(question), "Option "+identifier);
                 temp.setElement(PlainTextInputElement.builder().initialValue(question).build());
                 blocks.add(temp);
             }
@@ -118,19 +93,38 @@ public class SlackManager {
         else
         {
             for (int i = 0; i < 2; i++) {
-
-                blocks.add(BlockBuilder(identifier, i));
+                blocks.add(inputBlockBuilder("Option "+identifier, "option "+i, "Option "+identifier));
+                identifier++;
             }
         }
+
+        //Add/remove option buttons
+
+        LayoutBlock addOptionsSection = ActionsBlock.builder()
+                .blockId(BLOCK_ID_ADD_REMOVE_ACTION_BLOCK)
+                .elements(Arrays.asList(
+                        ButtonElement.builder().text(PlainTextObject.builder().text("Add Option").build()).actionId(ACTION_ID_ADD_OPTION).style("primary").build()
+                ))
+                .build();
+
+        blocks.add(addOptionsSection);
+
+        //Divider block
+        blocks.add(DividerBlock.builder().build());
+        //Heading
+        blocks.add(SectionBlock.builder().text(MarkdownTextObject.builder().text("*Poll settings*").build()).build());
+        //Poll options
+        blocks.add(pollOptionsBuilder(new CreatePollOptions()));
 
         View view = View.builder()
                 .type("modal")
                 .callbackId(CALLBACK_MODAL_CREATE_POLL)
                 .title(ViewTitle.builder().type("plain_text").text("Create a poll").build())
-                .submit(ViewSubmit.builder().type("plain_text").text("Select poll options").build())
+                .submit(ViewSubmit.builder().type("plain_text").text("Submit").build())
                 .close(ViewClose.builder().type("plain_text").text("Close").build())
                 .notifyOnClose(false)
                 .blocks(blocks)
+                .privateMetadata(GsonFactory.createSnakeCase().toJson(new CreatePollOptions(), CreatePollOptions.class))
                 .build();
 
         try {
@@ -144,40 +138,73 @@ public class SlackManager {
 
     public String handleBlockAction(String jsonPayload) {
         BlockActionPayload payload = GsonFactory.createSnakeCase().fromJson(jsonPayload, BlockActionPayload.class);
+        View payloadView = payload.getView();
+        String actionId = payload.getActions().get(0).getActionId();
+        CreatePollOptions options = GsonFactory.createSnakeCase().fromJson(payload.getView().getPrivateMetadata(), CreatePollOptions.class);
 
-        //Did user change option count in modal?
-        if (payload.getActions().get(0).getActionId().equals(OPTIONS_COUNT_INPUT_ACTION_ID)) {
-            //Get new View layout and send view update command
-            List<LayoutBlock> newBlocks = changeModalOptionInputs(payload.getView().getBlocks(), Integer.parseInt(payload.getActions().get(0).getSelectedOption().getValue()));
-            sendViewUpdate(newBlocks, payload.getView());
-            return "";
+        List<LayoutBlock> newBlocks;
+
+        switch(actionId){
+            case ACTION_ID_ADD_OPTION:
+                //Get new View layout and send view update command
+                newBlocks = addModalOptionInput(payload.getView().getBlocks());
+                break;
+            case ACTION_ID_REMOVE_OPTION:
+                newBlocks = removeModalOptionInput(payload.getView().getBlocks());
+                break;
+            case ACTION_ID_ALLOW_USERS_TO_ADD_OPTIONS_CHECK:
+                options.allowUsersToAddOptions = !options.allowUsersToAddOptions;
+                newBlocks = updateModalPollOptions(payload.getView().getBlocks(), options);
+                break;
+            case ACTION_ID_ANONYMOUS_CHECK:
+                options.anonymous = !options.anonymous;
+                newBlocks = updateModalPollOptions(payload.getView().getBlocks(), options);
+                break;
+            case ACTION_ID_MULTI_VOTE_CHECK:
+                options.multivote = !options.multivote;
+                newBlocks = updateModalPollOptions(payload.getView().getBlocks(), options);
+                break;
+            default:
+                newBlocks = payload.getView().getBlocks();
         }
-
+        payloadView.setPrivateMetadata(GsonFactory.createSnakeCase().toJson(options, CreatePollOptions.class));
+        sendViewUpdate(newBlocks, payloadView);
         return "";
     }
 
-    private List<LayoutBlock> changeModalOptionInputs(List<LayoutBlock> blocks, int inputsCount) {
-        //List<LayoutBlock> presentInputs = blocks.stream().filter(c -> c instanceof InputBlock).filter(c -> ((InputBlock) c).getBlockId()!=QUESTION_INPUT_ID).collect(Collectors.toList());
+    private List<LayoutBlock> updateModalPollOptions(List<LayoutBlock> blocks, CreatePollOptions options){
+        blocks.set(blocks.size()-1, pollOptionsBuilder(options));
+        return blocks;
+    }
 
-        LinkedList<LayoutBlock> newBlocks = new LinkedList<>();
+    private List<LayoutBlock> addModalOptionInput(List<LayoutBlock> blocks){
+        int optionCount = (int)blocks.stream().filter(c -> c instanceof InputBlock && !((InputBlock) c).getBlockId().equals(BLOCK_ID_QUESTION_INPUT)).count();
 
-        newBlocks.add(blocks.remove(0));   //Question input
-        newBlocks.add(blocks.remove(0));   //Questions count select
+        char identifier = (char)('A' + optionCount);
+        LayoutBlock newOption = inputBlockBuilder("Option "+identifier, "option "+ optionCount, "Option "+identifier);
 
-        char identifier = 'A';
+        blocks.set(optionCount + 1, ActionsBlock.builder().blockId(BLOCK_ID_ADD_REMOVE_ACTION_BLOCK)
+                .elements(Arrays.asList(
+                        ButtonElement.builder().text(PlainTextObject.builder().text("Add Option").build()).actionId(ACTION_ID_ADD_OPTION).style("primary").build(),
+                        ButtonElement.builder().text(PlainTextObject.builder().text("Remove Option").build()).actionId(ACTION_ID_REMOVE_OPTION).build()
+                )).build());
+        blocks.add(optionCount + 1, newOption);
 
-        for (int i = 0; i < inputsCount; i++) {
-            if (blocks.stream().filter(c -> c instanceof InputBlock).count() > 0) {
-                newBlocks.add(blocks.remove(0));
-                continue;
-            }
+        return blocks;
+    }
 
-            newBlocks.add(BlockBuilder(identifier, i));
+    private List<LayoutBlock> removeModalOptionInput(List<LayoutBlock> blocks){
+        int optionCount = (int)blocks.stream().filter(c -> c instanceof InputBlock && !((InputBlock) c).getBlockId().equals(BLOCK_ID_QUESTION_INPUT)).count();
+        if(optionCount <= 3){
+            blocks.set(optionCount + 1, ActionsBlock.builder().blockId(BLOCK_ID_ADD_REMOVE_ACTION_BLOCK)
+                    .elements(Arrays.asList(
+                            ButtonElement.builder().text(PlainTextObject.builder().text("Add Option").build()).actionId(ACTION_ID_ADD_OPTION).style("primary").build()
+                    )).build());
         }
-        //Additional formatting
-        newBlocks.add(SectionBlock.builder().text(MarkdownTextObject.builder().text("\n").build()).build());
 
-        return newBlocks;
+        blocks.remove(optionCount);
+
+        return blocks;
     }
 
     private void sendViewUpdate(List<LayoutBlock> blocks, View oldView) {
@@ -188,6 +215,7 @@ public class SlackManager {
                 .callbackId(oldView.getCallbackId())
                 .notifyOnClose(false)
                 .blocks(blocks)
+                .privateMetadata(oldView.getPrivateMetadata())
                 .build();
 
         try {
@@ -200,102 +228,73 @@ public class SlackManager {
     public String handleViewSubmission(String jsonPayload) {
         ViewSubmissionPayload payload = GsonFactory.createSnakeCase().fromJson(jsonPayload, ViewSubmissionPayload.class);
         String callback = payload.getView().getCallbackId();
+        ViewState state = payload.getView().getState();
 
-        if (callback.equals(CALLBACK_MODAL_CREATE_POLL)) {
-            LayoutBlock selectAnonymous = InputBlock.builder()
-                    .blockId(BLOCK_ID_SELECT_ANONYMOUS)
-                    .label(PlainTextObject.builder().text("Make votes anonymous").build())
-                    .element(OptionsBuilder())
-                    .build();
+        //States of submitted view components
+        List<Map<String, ViewState.Value>> stateValuesList = new LinkedList<>(state.getValues().values());
 
-            LayoutBlock selectMultivote = InputBlock.builder()
-                    .blockId(BLOCK_ID_SELECT_MULTIVOTE)
-                    .label(PlainTextObject.builder().text("Allow users to vote multiple times").build())
-                    .element(OptionsBuilder())
-                    .build();
+        String inputQuestion = stateValuesList.get(0).values().stream().findFirst().get().getValue();
+        stateValuesList.remove(0);
 
-            LayoutBlock selectAllowUsersToAdd = InputBlock.builder()
-                    .blockId(BLOCK_ID_SELECT_ALLOW_USERS_TO_ADD_OPTIONS)
-                    .label(PlainTextObject.builder().text("Allow users to add answer options").build())
-                    .element(OptionsBuilder())
-                    .build();
+        // A list of all option Strings
+        List<String> questionOptions = new LinkedList<>();
+        stateValuesList.forEach(i -> questionOptions.add(i.values().stream().findFirst().get().getValue()));
 
-            View view = View.builder()
-                    .type("modal")
-                    .callbackId(CALLBACK_MODAL_SELECT_OPTIONS)
-                    .title(ViewTitle.builder().type("plain_text").text("Additional options").build())
-                    .submit(ViewSubmit.builder().type("plain_text").text("Post poll").build())
-                    .close(ViewClose.builder().type("plain_text").text("Back").build())
-                    .notifyOnClose(false)
-                    .blocks(Arrays.asList(selectAnonymous, selectMultivote, selectAllowUsersToAdd))
-                    .privateMetadata(GsonFactory.createSnakeCase().toJson(payload.getView().getState(), ViewState.class))
-                    .build();
+        //Current poll options
+        CreatePollOptions pollOptions = GsonFactory.createSnakeCase().fromJson(payload.getView().getPrivateMetadata(), CreatePollOptions.class);
 
-
-            ViewSubmissionResponse response = ViewSubmissionResponse.builder().responseAction("push").view(view).build();
-            return GsonFactory.createSnakeCase().toJson(response, ViewSubmissionResponse.class);
-        } else if (callback.equals(CALLBACK_MODAL_SELECT_OPTIONS)) {
-            CreatePollOptions pollOptions = new CreatePollOptions();
-
-            // State from previous view holding question with options
-            ViewState prevState = GsonFactory.createSnakeCase().fromJson(payload.getView().getPrivateMetadata(), ViewState.class);
-
-            // A list of all value objects
-            List<Map<String, ViewState.Value>> optionObjectList = new LinkedList<>(prevState.getValues().values());
-
-            // Question string
-            String inputQuestion = optionObjectList.get(0).values().stream().findFirst().get().getValue();
-            optionObjectList.remove(0);
-
-            // Add question options to the list
-            List<String> questionOptions = new LinkedList<>();
-            optionObjectList.forEach(
-                    item -> questionOptions.add(item.values().stream().findFirst().get().getValue())
-            );
-
-            //Current state with poll options
-            List<Map<String, ViewState.Value>> currState = new LinkedList<>(payload.getView().getState().getValues().values());
-
-            if (currState.get(0).values().stream().findFirst().get().getSelectedOption().getValue().equals(ENABLE_SELECT_VALUE))
-                pollOptions.anonymous = true;
-            if (currState.get(1).values().stream().findFirst().get().getSelectedOption().getValue().equals(ENABLE_SELECT_VALUE))
-                pollOptions.multivote = true;
-            if (currState.get(2).values().stream().findFirst().get().getSelectedOption().getValue().equals(ENABLE_SELECT_VALUE))
-                pollOptions.allowUsersToAddOptions = true;
-
-            //Display Initial Message
-
-            Message message = new Message(slack,token);
-            message.PostInitialMessage(channelId,inputQuestion,questionOptions);
-
-            //Close all views after getting response
-            ViewSubmissionResponse response = ViewSubmissionResponse.builder().responseAction("clear").build();
-            return GsonFactory.createSnakeCase().toJson(response, ViewSubmissionResponse.class);
-        }
+        //Display Initial Message
+        Message message = new Message(slack,token);
+        message.PostInitialMessage(channelId,inputQuestion,questionOptions);
 
         return "";
     }
 
-    private InputBlock BlockBuilder(char identifier, int index) {
-        return
-                InputBlock.builder()
-                        .label(PlainTextObject.builder().text("Option " + (char) (identifier + index)).build())
+    private InputBlock inputBlockBuilder(String label, String actionId, String placeholder) {
+        return InputBlock.builder()
+                        .label(PlainTextObject.builder().text(label).build())
                         .element(PlainTextInputElement.builder()
-                                .placeholder(PlainTextObject.builder().text("Option " + (char) (identifier + index)).build())
-                                .actionId("option " + index)
+                                .placeholder(PlainTextObject.builder().text(placeholder).build())
+                                .actionId(actionId)
                                 .build())
                         .build();
     }
 
-    private StaticSelectElement OptionsBuilder() {
-        return
-                StaticSelectElement.builder()
-                        .options(Arrays.asList(
-                                OptionObject.builder().text(PlainTextObject.builder().text(ENABLE_SELECT_TEXT).build()).value(ENABLE_SELECT_VALUE).build(),
-                                OptionObject.builder().text(PlainTextObject.builder().text(DISABLE_SELECT_TEXT).build()).value(DISABLE_SELECT_VALUE).build()
-                        ))
-                        .initialOption(OptionObject.builder().text(PlainTextObject.builder().text(DISABLE_SELECT_TEXT).build()).value(DISABLE_SELECT_VALUE).build())
-                        .build();
+    private InputBlock inputBlockBuilder(String label, String actionId, String placeholder, String block_id) {
+        return InputBlock.builder()
+                .label(PlainTextObject.builder().text(label).build())
+                .element(PlainTextInputElement.builder()
+                        .placeholder(PlainTextObject.builder().text(placeholder).build())
+                        .actionId(actionId)
+                        .build())
+                .blockId(block_id)
+                .build();
+    }
+
+    private ActionsBlock pollOptionsBuilder(CreatePollOptions options){
+        String checkedPrefix = "\u2713 ";
+        List<BlockElement> elements = new LinkedList<>();
+
+        if(options.anonymous){
+            elements.add(ButtonElement.builder().text(PlainTextObject.builder().text(checkedPrefix + "Make poll anonymous").build()).actionId(ACTION_ID_ANONYMOUS_CHECK).style("primary").build());
+        }
+        else{
+            elements.add(ButtonElement.builder().text(PlainTextObject.builder().text("Make poll anonymous").build()).actionId(ACTION_ID_ANONYMOUS_CHECK).build());
+        }
+        if(options.multivote){
+            elements.add(ButtonElement.builder().text(PlainTextObject.builder().text(checkedPrefix + "Allow multiple votes").build()).actionId(ACTION_ID_MULTI_VOTE_CHECK).style("primary").build());
+        }
+        else{
+            elements.add(ButtonElement.builder().text(PlainTextObject.builder().text("Allow multiple votes").build()).actionId(ACTION_ID_MULTI_VOTE_CHECK).build());
+        }
+        if(options.allowUsersToAddOptions){
+            elements.add(ButtonElement.builder().text(PlainTextObject.builder().text(checkedPrefix + "Allow users to add options").build()).actionId(ACTION_ID_ALLOW_USERS_TO_ADD_OPTIONS_CHECK).style("primary").build());
+        }
+        else{
+            elements.add(ButtonElement.builder().text(PlainTextObject.builder().text("Allow users to add options").build()).actionId(ACTION_ID_ALLOW_USERS_TO_ADD_OPTIONS_CHECK).build());
+        }
+
+        return ActionsBlock.builder().blockId(BLOCK_ID_POLL_OPTIONS_BLOCK).elements(elements).build();
     }
 
 }
