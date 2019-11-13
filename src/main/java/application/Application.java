@@ -6,11 +6,13 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import java.io.IOException;
 
+import static org.springframework.boot.SpringApplication.run;
+
 @SpringBootApplication
 public class Application {
 
     public static void main(String[] args) throws IOException {
-        SpringApplication.run(Application.class, args);
+        run(Application.class, args);
         Logger logger = new Logger();
     }
 }

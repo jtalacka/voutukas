@@ -48,6 +48,7 @@ public class SlackManager {
     private final String ENABLE_SELECT_TEXT = "Enable";
     private final String DISABLE_SELECT_VALUE = "Disable";
     private final String DISABLE_SELECT_TEXT = "Disable";
+    private String channelId;
     private Slack slack;
     private String token;
     private List<String> InlineText;
@@ -57,7 +58,8 @@ public class SlackManager {
         token = System.getenv("SLACK_API_ACCESS_TOKEN");
     }
 
-    public void composeInitialModal(String triggerId, List<String> InlineInlineText) {
+    public void composeInitialModal(String triggerId, List<String> InlineInlineText,String channelId){
+        this.channelId=channelId;
         // Question area
         InlineText = InlineInlineText;
         LayoutBlock questionBlock = InputBlock.builder()
@@ -260,6 +262,11 @@ public class SlackManager {
                 pollOptions.multivote = true;
             if (currState.get(2).values().stream().findFirst().get().getSelectedOption().getValue().equals(ENABLE_SELECT_VALUE))
                 pollOptions.allowUsersToAddOptions = true;
+
+            //Display Initial Message
+
+            Message message = new Message(slack,token);
+            message.PostInitialMessage(channelId,inputQuestion,questionOptions);
 
             //Close all views after getting response
             ViewSubmissionResponse response = ViewSubmissionResponse.builder().responseAction("clear").build();
