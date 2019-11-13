@@ -36,9 +36,24 @@ class Home extends Component {
                   </Link>
                 </li>
               </ul>
+              <ul className="navbar-nav ml-auto">
+                <li style={{ color: "grey" }}>{this.props.user["name"]}</li>
+                <li>
+                  <Link to={"/"}>
+                    <button
+                      type="button"
+                      className="btn btn-danger"
+                      style={{ marginLeft: "10px" }}
+                      onClick={this.props.resetState}
+                    >
+                      Log Out
+                    </button>
+                  </Link>
+                </li>
+              </ul>
             </nav>
             <Switch>
-              <Redirect from="/admin" to="/Data" />
+              <Redirect from="/loading" to="/Data" />
               <Route path="/Data">
                 <Data
                   user={this.props.user}
