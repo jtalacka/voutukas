@@ -11,13 +11,18 @@ public class Logger {
     private static String LOG_EVENTS_FILENAME = "EventLogs.txt";
     private static String LOG_PAYLOADS_FILEMAME = "PayloadLogs.txt";
 
-    static FileWriter eventsLogger;
-    static FileWriter payloadLogger;
-    static SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-    static File eventLogs = new File(LOG_PATH + "\\" + LOG_EVENTS_FILENAME + ".txt");
-    static File payloadLogs;
+    private static FileWriter eventsLogger;
+    private static FileWriter payloadLogger;
+    private static SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    private static File eventLogs = new File(LOG_PATH + "\\" + LOG_EVENTS_FILENAME);
+    private static File payloadLogs;
 
     public Logger() throws IOException {
+        File directory = new File(LOG_PATH);
+        if(!directory.exists())
+        {
+            directory.mkdir();
+        }
         if(eventLogs.createNewFile())
         {
             eventsLogger = new FileWriter(eventLogs);
