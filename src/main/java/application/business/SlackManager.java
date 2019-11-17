@@ -252,7 +252,7 @@ public class SlackManager {
 
         //Display Initial Message
         Message message = new Message(slack,token);
-        message.PostInitialMessage(channelId,inputQuestion,questionOptions);
+        message.PostInitialMessage(channelId,inputQuestion,questionOptions,payload.getUser().getId(),payload.getUser().getUsername());
 
         return "";
     }

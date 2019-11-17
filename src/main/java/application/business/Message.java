@@ -1,5 +1,10 @@
 package application.business;
 
+import application.CompositeKeys.PollID;
+import application.Modals.Option;
+import application.Modals.Poll;
+import application.Modals.User;
+import application.Repositories.PollRepository;
 import com.github.seratch.jslack.Slack;
 import com.github.seratch.jslack.api.methods.SlackApiException;
 import com.github.seratch.jslack.api.methods.response.chat.ChatPostMessageResponse;
@@ -12,7 +17,8 @@ import com.github.seratch.jslack.api.model.block.composition.TextObject;
 import com.github.seratch.jslack.api.model.block.element.ButtonElement;
 import com.github.seratch.jslack.app_backend.interactive_messages.payload.BlockActionPayload;
 import com.github.seratch.jslack.common.json.GsonFactory;
-import org.apache.catalina.ssi.SSIStopProcessingException;
+
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -20,7 +26,11 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
+
+
 public class Message {
+    @Autowired
+    public PollRepository pollRepository;
     private String ChannelID;
     private Slack slack;
     private String token;
@@ -54,15 +64,23 @@ public class Message {
 
         return blocks;
     }
-    public void PostInitialMessage(String channelId, String question, List<String> answers){
-        
+    public void PostInitialMessage(String channelId, String question, List<String> answers,String userId,String userName){
+        ChatPostMessageResponse postResponse = null;
         try {
-            ChatPostMessageResponse postResponse = slack.methods(token).chatPostMessage(req -> req.channel(channelId).blocks(ComposeMessage(question,answers)));
+            postResponse = slack.methods(token).chatPostMessage(req -> req.channel(channelId).blocks(ComposeMessage(question,answers)));
+            createPollTable(channelId,question,answers,postResponse.getTs().toString(),userId,userName);
+
         } catch (SlackApiException e) {
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+    }
+    public void createPollTable(String channelId,String question,List<String> answers, String timeStamp,String userId,String userName){
+
+
+        pollRepository.save(new Poll(new PollID("timespam1","channelId"), "nameeee", new User(1)));
 
     }
     public void OnUserVote(String payload){
