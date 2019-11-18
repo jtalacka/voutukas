@@ -4,7 +4,9 @@ import application.CompositeKeys.PollID;
 import application.Modals.Option;
 import application.Modals.Poll;
 import application.Modals.User;
+import application.Repositories.OptionRepository;
 import application.Repositories.PollRepository;
+import application.Repositories.UserRepository;
 import com.github.seratch.jslack.Slack;
 import com.github.seratch.jslack.api.methods.SlackApiException;
 import com.github.seratch.jslack.api.methods.response.chat.ChatPostMessageResponse;
@@ -19,24 +21,23 @@ import com.github.seratch.jslack.app_backend.interactive_messages.payload.BlockA
 import com.github.seratch.jslack.common.json.GsonFactory;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Configurable;
+import org.springframework.stereotype.Component;
 
+import javax.swing.*;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
-
-
-
 public class Message {
-    @Autowired
-    public PollRepository pollRepository;
     private String ChannelID;
     private Slack slack;
     private String token;
     public Message(Slack slack,String token) {
         this.slack=slack;
         this.token=token;
+
 
     }
     public List<LayoutBlock> ComposeMessage(String question, List<String> answers){
@@ -79,8 +80,20 @@ public class Message {
     }
     public void createPollTable(String channelId,String question,List<String> answers, String timeStamp,String userId,String userName){
 
+        PollRepository pollRepository=SpringContext.getBean(PollRepository.class);
+        UserRepository userRepository=SpringContext.getBean(UserRepository.class);
+        OptionRepository optionRepository=SpringContext.getBean(OptionRepository.class);
+        User user=new User(userId,userName);
+        userRepository.save(user);
+        PollID pollId=new PollID(timeStamp,channelId);
+        pollRepository.save(new Poll(pollId, question,user));
+        answers.forEach(
+                answer->{
+                    optionRepository.save(new Option(null,new Poll(pollId, question,user),answer));
 
-        pollRepository.save(new Poll(new PollID("timespam1","channelId"), "nameeee", new User(1)));
+                }
+        );
+        
 
     }
     public void OnUserVote(String payload){

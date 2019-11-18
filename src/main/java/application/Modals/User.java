@@ -9,8 +9,7 @@ import java.util.Set;
 public class User {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private String id;
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "answers",
@@ -23,8 +22,9 @@ public class User {
 
     public User() {
     }
-    public User(int id) {
+    public User(String id,String name) {
         this.id = id;
+        this.name = name;
     }
 
     public User(String name) {
