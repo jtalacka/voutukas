@@ -14,8 +14,8 @@ public class Option {
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "answers",
-            joinColumns = { @JoinColumn(name = "user_id") },
-            inverseJoinColumns = { @JoinColumn(name = "option_id") })
+            joinColumns = { @JoinColumn(name = "option_id") },
+            inverseJoinColumns = { @JoinColumn(name = "user_id") })
     private Set<User> answers = new HashSet<>();
 
     @ManyToOne
@@ -32,6 +32,10 @@ public class Option {
         this.pollId = pollId;
         this.optionText = optionText;
     }
+    public Option( Poll pollId, String optionText) {
+        this.pollId = pollId;
+        this.optionText = optionText;
+    }
 
     public Poll getPollId() {
         return pollId;
@@ -39,6 +43,10 @@ public class Option {
 
     public void setPollId(Poll pollId) {
         this.pollId = pollId;
+    }
+
+    public int getId(){
+        return id;
     }
 
     public Set<User> getAnswers() {

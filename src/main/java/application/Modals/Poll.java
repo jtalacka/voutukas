@@ -29,6 +29,9 @@ public class Poll {
         this.name = name;
         this.owner = ownerId;
     }
+    public Poll(PollID pollId){
+        this.id=pollId;
+    }
 
     public Poll(PollID id, Set<Properties> pollProperties, String name, User ownerId) {
         this.id = id;

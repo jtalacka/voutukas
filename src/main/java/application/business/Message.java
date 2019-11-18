@@ -9,11 +9,10 @@ import application.Repositories.PollRepository;
 import application.Repositories.UserRepository;
 import com.github.seratch.jslack.Slack;
 import com.github.seratch.jslack.api.methods.SlackApiException;
+import com.github.seratch.jslack.api.methods.response.chat.ChatDeleteResponse;
 import com.github.seratch.jslack.api.methods.response.chat.ChatPostMessageResponse;
-import com.github.seratch.jslack.api.model.block.ActionsBlock;
-import com.github.seratch.jslack.api.model.block.DividerBlock;
-import com.github.seratch.jslack.api.model.block.LayoutBlock;
-import com.github.seratch.jslack.api.model.block.SectionBlock;
+import com.github.seratch.jslack.api.methods.response.chat.ChatUpdateResponse;
+import com.github.seratch.jslack.api.model.block.*;
 import com.github.seratch.jslack.api.model.block.composition.PlainTextObject;
 import com.github.seratch.jslack.api.model.block.composition.TextObject;
 import com.github.seratch.jslack.api.model.block.element.ButtonElement;
@@ -25,10 +24,10 @@ import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.stereotype.Component;
 
 import javax.swing.*;
+import java.io.Console;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.lang.reflect.Array;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 public class Message {
     private String ChannelID;
@@ -42,7 +41,14 @@ public class Message {
     }
     public List<LayoutBlock> ComposeMessage(String question, List<String> answers){
         List<LayoutBlock> blocks=new ArrayList<>();
-        AtomicInteger counter=new AtomicInteger(0);
+
+        //temporary
+        OptionRepository optionRepository=SpringContext.getBean(OptionRepository.class);
+        AtomicInteger counter=new AtomicInteger(optionRepository.findAll().get(optionRepository.findAll().size()-1).getId()+1);
+
+        //temp
+
+
         LayoutBlock Question=SectionBlock.builder()
                 .text(PlainTextObject.builder().text(question).build()).blockId("TEST")
                 .build();
@@ -93,16 +99,88 @@ public class Message {
 
                 }
         );
-        
+
 
     }
     public void OnUserVote(String payload){
         BlockActionPayload pld = GsonFactory.createSnakeCase().fromJson(payload, BlockActionPayload.class);
         String timestamp=pld.getContainer().getMessageTs();
         String channelId=pld.getContainer().getChannelId();
+        String userId=pld.getUser().getId();
+        String username=pld.getUser().getUsername();
         String voteValue=pld.getActions().get(0).getValue();
+
+        OptionRepository optionRepository=SpringContext.getBean(OptionRepository.class);
+        UserRepository usr=SpringContext.getBean(UserRepository.class);
+        usr.save(new User(userId,username));
+
+        try{
+        optionRepository.findAllOptionsByPollID(new Poll(new PollID(timestamp,channelId))).forEach(
+                option->{if(option.getId()==Integer.parseInt(voteValue)){
+                    Set<User> answers =option.getAnswers();
+                    answers.add(new User(userId,username));
+                    option.setAnswers(answers);
+                    optionRepository.save(option);
+                }}
+        );}catch (Exception e){
+
+        }
+         UpdateMessage(timestamp,channelId);
+
         //System.out.println(pld.getActions().get(0).getValue());
     }
+    public void UpdateMessage(String timestamp,String channelID){
+        PollRepository poll=SpringContext.getBean(PollRepository.class);
+        OptionRepository options=SpringContext.getBean(OptionRepository.class);
+        Poll currentPoll=poll.getOne(new PollID(timestamp,channelID));
+        List<Option> op=options.findAllOptionsByPollID(new Poll(new PollID(timestamp,channelID)));
+
+        List<LayoutBlock> blocks=new ArrayList<>();
+
+        //temporary
+
+        //temp
+
+        LayoutBlock Question=SectionBlock.builder()
+                .text(PlainTextObject.builder().text(currentPoll.getName()).build()).blockId("TEST")
+                .build();
+        blocks.add(Question);
+        blocks.add(DividerBlock.builder().build());
+        op.forEach(answer->{blocks.add(
+                SectionBlock.builder()
+                        .text(PlainTextObject.builder().text(answer.getOptionText()).build())
+                        .accessory(ButtonElement.builder().text(PlainTextObject.builder().text("vote").build()).value(String.valueOf(answer.getId())).build())
+                        .build());
+            blocks.add(
+                   SectionBlock.builder().text(PlainTextObject.builder().text(UserBuilder(answer.getAnswers())).build()).build()
+            );
+        });
+        blocks.add(DividerBlock.builder().build());
+
+
+        try {
+            ChatUpdateResponse um = slack.methods(token).chatUpdate(req -> req.channel(currentPoll.getId().getChannelId()).ts(currentPoll.getId().getTimeStamp()).blocks(blocks));
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (SlackApiException e) {
+            e.printStackTrace();
+        }
+
+
+    }
+    public String UserBuilder(Set<User>users){
+     String user=" ";
+     for(int i=0;i<users.size();i++)
+        {
+            user+=users.iterator().next().getName()+" ";
+            System.out.println(user);
+
+     }
+
+
+        return user;
+    }
+
 
 
 }
