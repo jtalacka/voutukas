@@ -11,11 +11,8 @@ public class User {
     @Id
     private String id;
 
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(name = "answers",
-            joinColumns = { @JoinColumn(name = "user_id") },
-            inverseJoinColumns = { @JoinColumn(name = "option_id") })
-    private Set<Option> answers = new HashSet<>();
+    @ManyToMany(mappedBy = "answers")
+    private Set<Option> answers;
 
     @Column(name = "name")
     private String name;

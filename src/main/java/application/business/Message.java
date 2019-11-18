@@ -118,14 +118,15 @@ public class Message {
         optionRepository.findAllOptionsByPollID(new Poll(new PollID(timestamp,channelId))).forEach(
                 option->{if(option.getId()==Integer.parseInt(voteValue)){
                     Set<User> answers =option.getAnswers();
-                    answers.add(new User(userId,username));
+                    answers.add(usr.getOne(userId));
                     option.setAnswers(answers);
                     optionRepository.save(option);
                 }}
         );}catch (Exception e){
 
+
         }
-         UpdateMessage(timestamp,channelId);
+        UpdateMessage(timestamp,channelId);
 
         //System.out.println(pld.getActions().get(0).getValue());
     }
@@ -170,12 +171,14 @@ public class Message {
     }
     public String UserBuilder(Set<User>users){
      String user=" ";
+        System.out.println("-----------------"+users.size());
      for(int i=0;i<users.size();i++)
         {
-            user+=users.iterator().next().getName()+" ";
-            System.out.println(user);
+            user+=users.iterator().next().getName()+"----";
+            System.out.println(users.iterator().next().getName());
 
      }
+     System.out.println("-----------------");
 
 
         return user;
