@@ -172,13 +172,11 @@ public class Message {
     public String UserBuilder(Set<User>users){
      String user=" ";
         System.out.println("-----------------"+users.size());
-     for(int i=0;i<users.size();i++)
-        {
-            user+=users.iterator().next().getName()+"----";
-            System.out.println(users.iterator().next().getName());
 
-     }
-     System.out.println("-----------------");
+        for (User u : users) {
+            user += u.getName()+" ";
+        }
+        System.out.println("-----------------");
 
 
         return user;
