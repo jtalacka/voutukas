@@ -16,4 +16,6 @@ public interface OptionRepository extends JpaRepository<Option, Integer> {
 
     @Query("SELECT o FROM Option o WHERE o.pollId = ?1")
     List<Option> findAllOptionsByPollID(Poll PollID);
+
+    Option findFirstByOrderByIdDesc();
 }

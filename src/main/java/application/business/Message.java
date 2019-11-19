@@ -44,8 +44,9 @@ public class Message {
 
         //temporary
         OptionRepository optionRepository=SpringContext.getBean(OptionRepository.class);
-        AtomicInteger counter=new AtomicInteger(optionRepository.findAll().get(optionRepository.findAll().size()-1).getId()+1);
 
+        //AtomicInteger counter=new AtomicInteger(optionRepository.findAll().get(optionRepository.findAll().size()-1).getId()+1);// times out
+        AtomicInteger counter=new AtomicInteger(optionRepository.findFirstByOrderByIdDesc().getId()+1);// times out
         //temp
 
 
@@ -128,7 +129,7 @@ public class Message {
         }
         UpdateMessage(timestamp,channelId);
 
-        //System.out.println(pld.getActions().get(0).getValue());
+    //    System.out.println(pld.getActions().get(0).getValue());
     }
     public void UpdateMessage(String timestamp,String channelID){
         PollRepository poll=SpringContext.getBean(PollRepository.class);
@@ -171,12 +172,10 @@ public class Message {
     }
     public String UserBuilder(Set<User>users){
      String user=" ";
-        System.out.println("-----------------"+users.size());
 
         for (User u : users) {
             user += u.getName()+" ";
         }
-        System.out.println("-----------------");
 
 
         return user;
