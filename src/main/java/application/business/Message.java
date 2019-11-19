@@ -24,6 +24,7 @@ import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.stereotype.Component;
 
 import javax.swing.*;
+import javax.swing.text.StyledEditorKit;
 import java.io.Console;
 import java.io.IOException;
 import java.lang.reflect.Array;
@@ -119,7 +120,14 @@ public class Message {
         optionRepository.findAllOptionsByPollID(new Poll(new PollID(timestamp,channelId))).forEach(
                 option->{if(option.getId()==Integer.parseInt(voteValue)){
                     Set<User> answers =option.getAnswers();
-                    answers.add(usr.getOne(userId));
+
+                    User u=SetContainsUser(answers,userId);
+                    if(u!=null){
+                        answers.remove(u);
+                    }else {
+                        answers.add(usr.getOne(userId));
+                    }
+
                     option.setAnswers(answers);
                     optionRepository.save(option);
                 }}
@@ -131,6 +139,16 @@ public class Message {
 
     //    System.out.println(pld.getActions().get(0).getValue());
     }
+    private User SetContainsUser(Set<User> answers,String userID){
+
+        for (User u : answers) {
+            if(u.getId()==userID) {
+            return u;
+            }
+            }
+        return null;
+    }
+
     public void UpdateMessage(String timestamp,String channelID){
         PollRepository poll=SpringContext.getBean(PollRepository.class);
         OptionRepository options=SpringContext.getBean(OptionRepository.class);
