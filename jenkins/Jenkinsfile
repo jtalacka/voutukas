@@ -1,0 +1,77 @@
+pod_label = "docker-${UUID.randomUUID().toString()}"
+acrUrl = "sourcery2019fall.azurecr.io"
+be_img = "vautukas/vautukas-be"
+namespace = "vautukas"
+
+pipeline {
+  agent {
+    kubernetes {
+      label "${pod_label}"
+      yamlFile "jenkins/jenkins-slave.yml"
+    }
+  }
+
+  options {
+    durabilityHint("PERFORMANCE_OPTIMIZED")
+    disableConcurrentBuilds()
+    buildDiscarder(logRotator(numToKeepStr: '10', artifactNumToKeepStr: '10'))
+  }
+
+  environment {
+    IMAGE_TAG = sh(returnStdout: true, script: 'printf ${GIT_COMMIT:=missing}')
+  }
+
+  stages {
+    stage("Build Images") {
+      parallel {
+        stage("back-end") {
+          steps {
+            container("docker") {
+              sh("set +x; docker login --username \$DOCKER_USERNAME --password \$DOCKER_PASSWORD ${acrUrl}; set -x")
+              sh("docker pull ${acrUrl}/${be_img}:latest || true")
+              sh """
+                docker build \
+                --cache-from ${acrUrl}/${be_img}:latest \
+                -t ${acrUrl}/${be_img}:latest \
+                -f "./Dockerfile" \
+                "."
+              """
+            }
+          }
+        }
+      }
+    }
+
+    stage("Deploy to ACR") {
+      //when {
+     //  branch "develop"
+      //}
+
+      steps {
+        container("docker") {
+          sh("set +x; docker login --username \$DOCKER_USERNAME --password \$DOCKER_PASSWORD ${acrUrl}; set -x")
+          sh("docker tag ${acrUrl}/${be_img}:latest ${acrUrl}/${be_img}:${env.IMAGE_TAG}")
+          sh("docker push ${acrUrl}/${be_img}:latest")
+          sh("docker push ${acrUrl}/${be_img}:${env.IMAGE_TAG}")
+        }
+      }
+    }
+
+    stage("Deploy to Kubernetes") {
+      //when {
+      //  branch "develop"
+      //}
+
+      parallel {
+        stage("back-end") {
+          steps {
+            container("kubectl") {
+              // sh("helm lint ./helm/${namespace} -f ./helm/values.be.yaml")
+              sh("helm upgrade --install --force ${namespace}-be ./helm/${namespace} -f ./helm/values.be.yaml --namespace ${namespace}")
+            }
+          }
+        }
+      }
+    }
+  }
+}
