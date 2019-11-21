@@ -1,0 +1,1 @@
++docker build -t vautukas-be . && docker run --rm -p 8080:8080 --name vautukas-be vautukas-be
