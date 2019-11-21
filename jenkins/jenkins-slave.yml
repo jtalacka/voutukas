@@ -52,3 +52,5 @@ spec:
       hostPath:
         path: /dockerbuilds/builds/vautukas-be
         type: DirectoryOrCreate
+  nodeSelector:
+    agentpool: infra

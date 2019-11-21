@@ -36,5 +36,7 @@ spec:
           resources:
 {{ toYaml .Values.container.resources | indent 12 }}
       restartPolicy: {{ .Values.container.restartPolicy }}
+      nodeSelector:
+        agentpool: apps
       # imagePullSecrets:
       #   - name: {{ .Values.container.imagePullSecrets }}
