@@ -1,9 +1,18 @@
-package application.Modals;
+package application.domain;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import java.util.HashSet;
 import java.util.Set;
 
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @Entity
 @Table(name = "optiontable")
 public class Option {
@@ -24,7 +33,13 @@ public class Option {
     @Column(name = "option_text")
     private String optionText;
 
-    public Option() {
+    public Option(Poll pollId) {
+        this.pollId = pollId;
+    }
+
+    public Option(Poll pollId, String optionText) {
+        this.pollId = pollId;
+        this.optionText = optionText;
     }
 
     public Option(Set<User> answers, Poll pollId, String optionText) {
@@ -32,36 +47,5 @@ public class Option {
         this.pollId = pollId;
         this.optionText = optionText;
     }
-    public Option( Poll pollId, String optionText) {
-        this.pollId = pollId;
-        this.optionText = optionText;
-    }
 
-    public Poll getPollId() {
-        return pollId;
-    }
-
-    public void setPollId(Poll pollId) {
-        this.pollId = pollId;
-    }
-
-    public int getId(){
-        return id;
-    }
-
-    public Set<User> getAnswers() {
-        return answers;
-    }
-
-    public void setAnswers(Set<User> answers) {
-        this.answers = answers;
-    }
-
-    public String getOptionText() {
-        return optionText;
-    }
-
-    public void setOptionText(String optionText) {
-        this.optionText = optionText;
-    }
 }
