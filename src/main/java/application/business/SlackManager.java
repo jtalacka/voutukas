@@ -139,6 +139,12 @@ public class SlackManager {
 
     public String handleBlockAction(String jsonPayload) {
         BlockActionPayload payload = GsonFactory.createSnakeCase().fromJson(jsonPayload, BlockActionPayload.class);
+        if(payload.getContainer().getType().equals("message")){
+            Message message= new Message(slack,token);
+            message.OnUserVote(jsonPayload);
+            return "";
+        }
+
         View payloadView = payload.getView();
         String actionId = payload.getActions().get(0).getActionId();
         CreatePollOptions options = GsonFactory.createSnakeCase().fromJson(payload.getView().getPrivateMetadata(), CreatePollOptions.class);
@@ -246,7 +252,7 @@ public class SlackManager {
 
         //Display Initial Message
         Message message = new Message(slack,token);
-        message.PostInitialMessage(channelId,inputQuestion,questionOptions);
+        message.PostInitialMessage(channelId,inputQuestion,questionOptions,payload.getUser().getId(),payload.getUser().getUsername());
 
         return "";
     }

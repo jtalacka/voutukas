@@ -10,6 +10,8 @@ public class UIController {
     @GetMapping("/")
     public String homePage(Model model) {
         model.addAttribute("message", "There's nothing to see here");
+
+
         return "home";
     }
 }

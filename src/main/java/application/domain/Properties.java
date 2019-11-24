@@ -1,9 +1,18 @@
-package application.Modals;
+package application.domain;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import java.util.HashSet;
 import java.util.Set;
 
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @Entity
 @Table(name = "Properties")
 public class Properties {
@@ -18,31 +27,12 @@ public class Properties {
     @Column(name = "name")
     private String name;
 
-    public Properties() {
-    }
-
     public Properties(String name) {
         this.name = name;
     }
 
     public Properties(Set<Poll> pollProperties, String name) {
             this.polls = pollProperties;
-        this.name = name;
-    }
-
-    public Set<Poll> getPollProperties() {
-        return polls;
-    }
-
-    public void setPollProperties(Set<Poll> pollProperties) {
-        this.polls = pollProperties;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
         this.name = name;
     }
 }
