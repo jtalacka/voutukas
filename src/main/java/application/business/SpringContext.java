@@ -1,8 +1,5 @@
 package application.business;
 
-import application.CompositeKeys.PollID;
-import application.Modals.Poll;
-import application.Modals.User;
 import application.Repositories.PollRepository;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;

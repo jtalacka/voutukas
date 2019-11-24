@@ -1,12 +1,12 @@
 package application.business;
 
-import application.CompositeKeys.PollID;
-import application.Modals.Option;
-import application.Modals.Poll;
-import application.Modals.User;
 import application.Repositories.OptionRepository;
 import application.Repositories.PollRepository;
 import application.Repositories.UserRepository;
+import application.domain.Option;
+import application.domain.Poll;
+import application.domain.PollID;
+import application.domain.User;
 import com.github.seratch.jslack.Slack;
 import com.github.seratch.jslack.api.methods.SlackApiException;
 import com.github.seratch.jslack.api.methods.response.chat.ChatDeleteResponse;
