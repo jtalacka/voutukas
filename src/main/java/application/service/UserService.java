@@ -8,6 +8,7 @@ import application.mapper.UserMapper;
 import java.util.ArrayList;
 import java.util.List;
 
+@Service
 public class UserService {
 
     private UserRepository userRepository;
