@@ -4,10 +4,12 @@ import application.Repositories.UserRepository;
 import application.domain.User;
 import application.dto.UserDto;
 import application.mapper.UserMapper;
+import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@Service
 public class UserService {
 
     private UserRepository userRepository;

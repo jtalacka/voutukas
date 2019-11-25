@@ -1,9 +1,6 @@
 package application.domain;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import javax.persistence.*;
 import java.util.HashSet;
@@ -20,6 +17,8 @@ public class Poll {
     @EmbeddedId
     private PollID id;
 
+    @EqualsAndHashCode.Exclude
+    @ToString.Exclude
     @ManyToMany(fetch = FetchType.LAZY)
     private Set<Properties> Properties = new HashSet<>();
 

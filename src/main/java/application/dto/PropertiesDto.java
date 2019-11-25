@@ -1,9 +1,6 @@
 package application.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -17,6 +14,8 @@ public class PropertiesDto {
 
     private int id;
 
+    @EqualsAndHashCode.Exclude
+    @ToString.Exclude
     private Set<PollDto> polls;
 
     private String name;

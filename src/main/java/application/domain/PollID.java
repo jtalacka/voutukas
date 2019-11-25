@@ -1,9 +1,7 @@
 package application.domain;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.*;
 
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
@@ -16,9 +14,11 @@ import java.util.Objects;
 @Embeddable
 public class PollID implements Serializable {
 
+    @JsonProperty("time_stamp")
     @Column(name = "time_stamp")
     private String timeStamp;
 
+    @JsonProperty("channel_id")
     @Column(name = "channel_id")
     private String channelId;
 }

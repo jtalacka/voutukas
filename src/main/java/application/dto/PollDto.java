@@ -1,10 +1,7 @@
 package application.dto;
 
 import application.domain.PollID;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -19,6 +16,8 @@ public class PollDto {
 
     private String channelId;
 
+    @EqualsAndHashCode.Exclude
+    @ToString.Exclude
     private Set<PropertiesDto> Properties;
 
     private String name;

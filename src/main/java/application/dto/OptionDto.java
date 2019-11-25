@@ -3,10 +3,8 @@ package application.dto;
 import application.domain.Poll;
 import application.domain.PollID;
 import application.domain.User;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.*;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -19,6 +17,8 @@ public class OptionDto {
 
     private int id;
 
+    @EqualsAndHashCode.Exclude
+    @ToString.Exclude
     private Set<UserDto> answers;
 
     private PollDto pollId;

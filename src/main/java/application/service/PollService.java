@@ -7,10 +7,12 @@ import application.domain.User;
 import application.dto.OptionDto;
 import application.dto.PollDto;
 import application.mapper.PollMapper;
+import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@Service
 public class PollService {
 
     private PollRepository pollRepository;
