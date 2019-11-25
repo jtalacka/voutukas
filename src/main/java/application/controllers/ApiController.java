@@ -2,6 +2,7 @@ package application.controllers;
 
 import application.domain.PollID;
 import application.dto.PollDto;
+import application.dto.PollIdDto;
 import application.service.OptionService;
 import application.service.PollService;
 import application.service.UserService;
@@ -25,14 +26,15 @@ public class ApiController {
         this.userService = userService;
     }
 
-    @GetMapping("/hi")
-    public String hello(){
-        return "Hi there";
-    }
-
     @GetMapping(value = "/poll", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<PollDto> getPollById(@RequestBody PollID pollID){
+    public ResponseEntity<PollDto> getPollById(@RequestBody PollIdDto pollID){
         PollDto poll = pollService.findPollByID(pollID.getTimeStamp(), pollID.getChannelId());
         return ResponseEntity.ok(poll);
+    }
+
+    @GetMapping(value = "/user/{userId}/polls")
+    public ResponseEntity<List<PollDto>> getAllUserPolls(@PathVariable String userId){
+        List<PollDto> polls = pollService.findPollsByUserId(userId);
+        return ResponseEntity.ok(polls);
     }
 }

@@ -12,7 +12,7 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@JsonPropertyOrder({"time_stamp", "channel_id"})
+@JsonPropertyOrder({"time_stamp", "channel_id", "name", "owner", "options"})
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class PollDto {
     @JsonProperty("time_stamp")
@@ -22,7 +22,7 @@ public class PollDto {
 
     @EqualsAndHashCode.Exclude
     @ToString.Exclude
-    private Set<PropertiesDto> Properties;
+    private Set<PropertiesDto> Properties; //Not set automatically
 
     @JsonIgnoreProperties({"answers", "owner", "poll_id"})
     private List<OptionDto> options;

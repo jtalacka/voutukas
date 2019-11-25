@@ -32,7 +32,8 @@ public class PollService {
     }
 
     public List<PollDto> findPollsByUserId(String id){
-        return convertToDtoList(pollRepository.findPollByUser(new User(id)));
+        //return convertToDtoList(pollRepository.findPollByUser(new User(id)));
+        return convertToDtoListWithOptions(pollRepository.findPollByUser(new User(id)));
     }
 
     public List<PollDto> findPollsByChannelID(String channelId){
@@ -47,6 +48,13 @@ public class PollService {
         List<PollDto> pollDtoList = new ArrayList();
         pollList.forEach(poll -> {
             pollDtoList.add(pollMapper.mapEntityToDto(poll));
+        });
+        return pollDtoList;
+    }
+    private List<PollDto> convertToDtoListWithOptions(List<Poll> pollList){
+        List<PollDto> pollDtoList = new ArrayList();
+        pollList.forEach(poll -> {
+            pollDtoList.add(pollMapper.mapEntityToDtoWithOptions(poll, optionService.findAllPollOptions(poll.getId().getTimeStamp(), poll.getId().getChannelId())));
         });
         return pollDtoList;
     }
