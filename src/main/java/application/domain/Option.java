@@ -1,9 +1,6 @@
 package application.domain;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import javax.persistence.*;
 import java.util.HashSet;
@@ -21,10 +18,13 @@ public class Option {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
+
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "answers",
             joinColumns = { @JoinColumn(name = "option_id") },
             inverseJoinColumns = { @JoinColumn(name = "user_id") })
+    @EqualsAndHashCode.Exclude
+    @ToString.Exclude
     private Set<User> answers = new HashSet<>();
 
     @ManyToOne
