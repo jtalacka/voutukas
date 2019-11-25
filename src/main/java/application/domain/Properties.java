@@ -1,9 +1,6 @@
 package application.domain;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import javax.persistence.*;
 import java.util.HashSet;
@@ -22,6 +19,8 @@ public class Properties {
     private int id;
 
     @ManyToMany(mappedBy="Properties")
+    @EqualsAndHashCode.Exclude
+    @ToString.Exclude
     private Set<Poll> polls= new HashSet<>();
 
     @Column(name = "name")

@@ -3,10 +3,7 @@ package application.dto;
 import application.domain.Poll;
 import application.domain.PollID;
 import application.domain.User;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -19,11 +16,17 @@ public class OptionDto {
 
     private int id;
 
+    @EqualsAndHashCode.Exclude
+    @ToString.Exclude
     private Set<UserDto> answers;
 
     private PollDto pollId;
 
     private String optionText;
+
+    private String optionTest;
+
+    private String optionFest;
 
     public OptionDto(PollDto pollId) {
         this.pollId = pollId;

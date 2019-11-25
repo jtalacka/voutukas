@@ -1,9 +1,6 @@
 package application.domain;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import javax.persistence.*;
 import java.util.Set;
@@ -20,6 +17,8 @@ public class User {
     private String id;
 
     @ManyToMany(mappedBy = "answers")
+    @EqualsAndHashCode.Exclude
+    @ToString.Exclude
     private Set<Option> answers;
 
     @Column(name = "name")
