@@ -24,10 +24,6 @@ public class OptionDto {
 
     private String optionText;
 
-    private String optionTest;
-
-    private String optionFest;
-
     public OptionDto(PollDto pollId) {
         this.pollId = pollId;
     }
