@@ -11,6 +11,7 @@ import application.mapper.PollMapper;
 import java.util.ArrayList;
 import java.util.List;
 
+@Service
 public class PollService {
 
     private PollRepository pollRepository;
