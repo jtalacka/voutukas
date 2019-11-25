@@ -25,8 +25,10 @@ public class PollService {
         this.optionService = optionService;
     }
 
-    public PollDto findPollByID(String timeStamp, String channleId){
-        return pollMapper.map(pollRepository.getOne(new PollID(timeStamp,channleId)));
+    public PollDto findPollByID(String timeStamp, String channelId){
+        return pollMapper.mapEntityToDtoWithOptions(
+                pollRepository.getOne(new PollID(timeStamp,channelId)),
+                optionService.findAllPollOptions(timeStamp, channelId));
     }
 
     public List<PollDto> findPollsByUserId(String id){
@@ -44,7 +46,7 @@ public class PollService {
     private List<PollDto> convertToDtoList(List<Poll> pollList){
         List<PollDto> pollDtoList = new ArrayList();
         pollList.forEach(poll -> {
-            pollDtoList.add(pollMapper.map(poll));
+            pollDtoList.add(pollMapper.mapEntityToDto(poll));
         });
         return pollDtoList;
     }
@@ -58,18 +60,18 @@ public class PollService {
     }
 
     public PollDto insert(PollDto pollDto){
-        return savePoll(pollMapper.map(pollDto));
+        return savePoll(pollMapper.mapDtoToEntity(pollDto));
     }
 
     public PollDto insert(PollDto pollDto, List<OptionDto> optionDtoList){
         optionDtoList.forEach(optionDto -> {
             optionService.insert(optionDto);
         });
-        return savePoll(pollMapper.map(pollDto));
+        return savePoll(pollMapper.mapDtoToEntity(pollDto));
     }
 
     public PollDto update(PollDto pollDto){
-        return savePoll(pollMapper.map(pollDto));
+        return savePoll(pollMapper.mapDtoToEntity(pollDto));
     }
 
     private PollDto savePoll(Poll poll){
