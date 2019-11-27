@@ -7,6 +7,7 @@ import application.domain.PollID;
 import application.dto.OptionDto;
 import application.mapper.OptionMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -53,18 +54,22 @@ public class OptionService {
         ));
     }
 
+    @Transactional
     public void deleteOptionById(int id){
         optionRepository.deleteById(id);
     }
 
+    @Transactional
     public void deleteOptionByPollIdAndOptionName(String timeStamp, String channelID, String optionName){
         optionRepository.deletePollOptionsByPollIdAndOptionText(new Poll(new PollID(timeStamp,channelID)),optionName);
     }
 
+    @Transactional
     public OptionDto insert(OptionDto optionDto){
         return saveOption(optionMapper.map(optionDto));
     }
 
+    @Transactional
     public OptionDto update(OptionDto optionDto){
         return saveOption(optionMapper.map(optionDto));
     }
