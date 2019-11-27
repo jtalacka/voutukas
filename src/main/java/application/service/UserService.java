@@ -5,6 +5,7 @@ import application.domain.User;
 import application.dto.UserDto;
 import application.mapper.UserMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,14 +33,17 @@ public class UserService {
         return userDtoList;
     }
 
+    @Transactional
     public void deleteUserByID(String id){
         userRepository.deleteById(id);
     }
 
+    @Transactional
     public UserDto insert(UserDto userDto){
         return saveUser(userMapper.map(userDto));
     }
 
+    @Transactional
     public UserDto update(UserDto userDto){
         return saveUser(userMapper.map(userDto));
     }
