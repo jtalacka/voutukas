@@ -27,6 +27,7 @@ public class PollDto {
     @JsonIgnoreProperties({"answers", "owner", "poll_id"})
     private List<OptionDto> options;
 
+    @JsonProperty("poll_question")
     private String name;
 
     private UserDto owner;

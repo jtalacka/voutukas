@@ -21,6 +21,9 @@ public class Poll {
     @ToString.Exclude
     @ManyToMany(fetch = FetchType.LAZY)
     private Set<Properties> Properties = new HashSet<>();
+    /*
+    * Neturetu but OneToMany su Optionais?
+    * */
 
     @Column(name = "name")
     private String name;

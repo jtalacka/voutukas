@@ -1,6 +1,6 @@
 package application.controllers;
 
-import application.domain.PollID;
+import application.apimodels.PollsByUserIdModel;
 import application.dto.PollDto;
 import application.dto.PollIdDto;
 import application.service.OptionService;
@@ -10,10 +10,8 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 @RestController
-@RequestMapping("/api/v1/")
+@RequestMapping("/api")
 public class ApiController {
 
     private OptionService optionService;
@@ -33,8 +31,25 @@ public class ApiController {
     }
 
     @GetMapping(value = "/user/{userId}/polls")
-    public ResponseEntity<List<PollDto>> getAllUserPolls(@PathVariable String userId){
-        List<PollDto> polls = pollService.findPollsByUserId(userId);
+    public ResponseEntity<PollsByUserIdModel> getAllUserPolls(@PathVariable String userId){
+        PollsByUserIdModel polls = pollService.findPollsByUserId(userId);
         return ResponseEntity.ok(polls);
+    }
+
+//    data
+//        NumberOfVotes
+//        options
+//           [
+//              optionText
+//              votes
+//              percentage of votes
+//              votesByUsers:
+//                  user1, user2.....
+//           ]
+//        properties:{...}
+
+    @GetMapping(value = "/poll/data")
+    public String getPollDataById(@RequestBody PollIdDto pollID){
+        return ":)";
     }
 }

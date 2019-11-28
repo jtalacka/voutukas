@@ -31,8 +31,7 @@ public class PollMapper {
         PollDto pollDto = modelMapper.map(poll, PollDto.class);
         pollDto.setChannelId(poll.getId().getChannelId());
         pollDto.setTimeStamp(poll.getId().getTimeStamp());
-
-        pollDto.setOptions(optionDtoList);
+               pollDto.setOptions(optionDtoList);
         return pollDto;
     }
 
