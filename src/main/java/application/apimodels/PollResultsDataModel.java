@@ -32,15 +32,4 @@ public class PollResultsDataModel {
         options = new ArrayList<>();
     }
 
-    //    data
-//        NumberOfVotes
-//        options
-//           [
-//              optionText
-//              votes
-//              percentage of votes
-//              votesByUsers:
-//                  user1, user2.....
-//           ]
-//        properties:{...}
 }
