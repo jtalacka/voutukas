@@ -1,5 +1,6 @@
 package application.controllers;
 
+import application.apimodels.PollResultsDataModel;
 import application.apimodels.PollsByUserIdModel;
 import application.dto.PollDto;
 import application.dto.PollIdDto;
@@ -48,8 +49,9 @@ public class ApiController {
 //           ]
 //        properties:{...}
 
-    @GetMapping(value = "/poll/data")
-    public String getPollDataById(@RequestBody PollIdDto pollID){
-        return ":)";
+    @GetMapping(value = "/poll/results")
+    public ResponseEntity<PollResultsDataModel> getPollResultsByPollId(@RequestBody PollIdDto pollID){
+        PollResultsDataModel pollResults = pollService.getPollResultsDataById(pollID.getTimeStamp(), pollID.getChannelId());
+        return ResponseEntity.ok(pollResults);
     }
 }
