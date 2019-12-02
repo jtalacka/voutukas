@@ -141,59 +141,78 @@ public class Message {
     public void OnUserVote(String payload){
         BlockActionPayload pld = GsonFactory.createSnakeCase().fromJson(payload, BlockActionPayload.class);
         System.out.println(payload);
-        CreatePollOptions cpo=GsonFactory.createSnakeCase().fromJson(pld.getView().getPrivateMetadata(), (Type) BlockActionPayload.class);
         String timestamp=pld.getContainer().getMessageTs();
         String channelId=pld.getContainer().getChannelId();
         String userId=pld.getUser().getId();
         String username=pld.getUser().getUsername();
         String voteValue=pld.getActions().get(0).getValue();
+        PollRepository poll=SpringContext.getBean(PollRepository.class);
+        Poll currentPoll=poll.getOne(new PollID(timestamp,channelId));
+        Set<Properties> properties=currentPoll.getProperties();
 
         OptionRepository optionRepository=SpringContext.getBean(OptionRepository.class);
+        PropertiesRepository propertiesRepository=SpringContext.getBean(PropertiesRepository.class);
         UserRepository usr=SpringContext.getBean(UserRepository.class);
+       // Set<Properties> properties=
         usr.save(new User(userId,username));
 
         try{
-        optionRepository.findAllOptionsByPollID(new Poll(new PollID(timestamp,channelId))).forEach(
-                option->{if(option.getId()==Integer.parseInt(voteValue)){
-                    Set<User> answers =option.getAnswers();
+            List<Option> options=optionRepository.findAllOptionsByPollID(new Poll(new PollID(timestamp,channelId)));
+            Boolean UserAlreadyVotedOnce=userContains(options,userId);
+            for (Option o : options){
 
+                if(o.getId()==Integer.parseInt(voteValue)){
+                    Set<User> answers =o.getAnswers();
                     User u=SetContainsUser(answers,userId);
-
                     if(u!=null){
-                        if(cpo.multivote==false){
-                        answers.remove(u);}
+                        //    if(!properties.contains(new Properties("multivote"))){
+                        answers.remove(u);//}
                     }else {
-                        answers.add(usr.getOne(userId));
+                        if(!UserAlreadyVotedOnce) {
+                            answers.add(usr.getOne(userId));
+                        }
                     }
 
-                    option.setAnswers(answers);
-                    optionRepository.save(option);
+                    o.setAnswers(answers);
+                    optionRepository.save(o);
+                    break;
                 }}
-        );}catch (Exception e){
+        }catch (Exception e){
 
 
-        }
-        UpdateMessage(timestamp,channelId,cpo);
+            }
+
+        UpdateMessage(timestamp,channelId);
 
     //    System.out.println(pld.getActions().get(0).getValue());
     }
     private User SetContainsUser(Set<User> answers,String userID){
 
         for (User u : answers) {
-            if(u.getId()==userID) {
+            if(u.getId().equals(userID)) {
             return u;
             }
             }
         return null;
     }
+    private Boolean userContains(List<Option> options, String userID){
+        for (Option o : options) {
+            for(User u: o.getAnswers())
+            if(u.getId().equals(userID)) {
+                return true;
+            }
+        }
+        return false;
+    }
 
-    public void UpdateMessage(String timestamp,String channelID,CreatePollOptions pollOptions){
+    public void UpdateMessage(String timestamp,String channelID){
         PollRepository poll=SpringContext.getBean(PollRepository.class);
         OptionRepository options=SpringContext.getBean(OptionRepository.class);
         Poll currentPoll=poll.getOne(new PollID(timestamp,channelID));
         List<Option> op=options.findAllOptionsByPollID(new Poll(new PollID(timestamp,channelID)));
 
         List<LayoutBlock> blocks=new ArrayList<>();
+        Set<Properties> properties=currentPoll.getProperties();
 
         //temporary
 
@@ -210,10 +229,14 @@ public class Message {
                         .accessory(ButtonElement.builder().text(PlainTextObject.builder().text("vote").build()).value(String.valueOf(answer.getId())).build())
                         .build());
             blocks.add(
-                   SectionBlock.builder().text(PlainTextObject.builder().text(UserBuilder(answer.getAnswers())).build()).build()
-            );
+                    SectionBlock.builder().text(PlainTextObject.builder().text(UserBuilder(answer.getAnswers())).build()).build());
+
+       /*     if(!properties.contains(new Properties("anonymous"))){
+                blocks.add(
+                        SectionBlock.builder().text(PlainTextObject.builder().text(String.valueOf(answer.getAnswers().size())).build()).build());
+            }*/
         });
-        if(pollOptions.allowUsersToAddOptions==true){
+            if(!properties.contains(new Properties("allowUsersToAddOptions"))){
             blocks.add(
                     SectionBlock.builder()
                             .text(PlainTextObject.builder().text("something").build())
