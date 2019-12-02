@@ -18,7 +18,7 @@ public class Properties {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    @ManyToMany(mappedBy="Properties")
+    @ManyToMany(mappedBy="Properties", cascade = CascadeType.REMOVE)
     @EqualsAndHashCode.Exclude
     @ToString.Exclude
     private Set<Poll> polls= new HashSet<>();
