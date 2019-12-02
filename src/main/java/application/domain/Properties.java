@@ -23,7 +23,7 @@ public class Properties {
     @ToString.Exclude
     private Set<Poll> polls= new HashSet<>();
 
-    @Column(name = "name")
+    @Column(name = "name",unique=true)
     private String name;
 
     public Properties(String name) {
