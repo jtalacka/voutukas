@@ -21,8 +21,6 @@ public class Properties {
     @EqualsAndHashCode.Exclude
     @ToString.Exclude
     @ManyToMany(mappedBy="Properties")
-    @EqualsAndHashCode.Exclude
-    @ToString.Exclude
     private Set<Poll> polls= new HashSet<>();
 
     @Column(name = "name",unique=true)

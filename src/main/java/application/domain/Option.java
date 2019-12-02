@@ -24,8 +24,6 @@ public class Option {
     @JoinTable(name = "answers",
             joinColumns = { @JoinColumn(name = "option_id") },
             inverseJoinColumns = { @JoinColumn(name = "user_id") })
-    @EqualsAndHashCode.Exclude
-    @ToString.Exclude
     private Set<User> answers = new HashSet<>();
 
     @ManyToOne

@@ -2,6 +2,7 @@ package application.apimodels;
 
 import application.dto.PropertiesDto;
 import application.dto.UserDto;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -23,6 +24,7 @@ public class OptionDataModel {
     private double percentageOfVotes;
 
     @JsonProperty("votes_by_users")
+    @JsonIgnoreProperties({"answers"})
     private List<UserDto> votesByUsers;
 
     private List<PropertiesDto> properties;

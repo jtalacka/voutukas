@@ -19,8 +19,6 @@ public class User {
     @EqualsAndHashCode.Exclude
     @ToString.Exclude
     @ManyToMany(mappedBy = "answers")
-    @EqualsAndHashCode.Exclude
-    @ToString.Exclude
     private Set<Option> answers;
 
     @Column(name = "name")

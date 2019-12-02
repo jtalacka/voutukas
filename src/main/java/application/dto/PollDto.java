@@ -30,5 +30,6 @@ public class PollDto {
     @JsonProperty("poll_question")
     private String name;
 
+    @JsonIgnoreProperties({"answers"})
     private UserDto owner;
 }

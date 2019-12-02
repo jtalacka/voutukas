@@ -37,18 +37,6 @@ public class ApiController {
         return ResponseEntity.ok(polls);
     }
 
-//    data
-//        NumberOfVotes
-//        options
-//           [
-//              optionText
-//              votes
-//              percentage of votes
-//              votesByUsers:
-//                  user1, user2.....
-//           ]
-//        properties:{...}
-
     @GetMapping(value = "/poll/results")
     public ResponseEntity<PollResultsDataModel> getPollResultsByPollId(@RequestBody PollIdDto pollID){
         PollResultsDataModel pollResults = pollService.getPollResultsDataById(pollID.getTimeStamp(), pollID.getChannelId());
