@@ -20,6 +20,8 @@ public class Poll {
     @EqualsAndHashCode.Exclude
     @ToString.Exclude
     @ManyToMany(fetch = FetchType.LAZY)
+    @EqualsAndHashCode.Exclude
+    @ToString.Exclude
     private Set<Properties> Properties = new HashSet<>();
     /*
     * Neturetu but OneToMany su Optionais?

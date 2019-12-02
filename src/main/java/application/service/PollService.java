@@ -13,6 +13,7 @@ import application.dto.PollDto;
 import application.dto.UserDto;
 import application.mapper.PollMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -92,18 +93,22 @@ public class PollService {
         return pollDtoList;
     }
 
+    @Transactional
     public void deletePollById(String timeStamp, String channelID){
         pollRepository.deleteById(new PollID(timeStamp,channelID));
     }
 
+    @Transactional
     public void deleteAllUsersPolls(String id){
         pollRepository.deleteAllPollByUser(new User(id));
     }
 
+    @Transactional
     public PollDto insert(PollDto pollDto){
         return savePoll(pollMapper.mapDtoToEntity(pollDto));
     }
 
+    @Transactional
     public PollDto insert(PollDto pollDto, List<OptionDto> optionDtoList){
         optionDtoList.forEach(optionDto -> {
             optionService.insert(optionDto);
@@ -111,6 +116,7 @@ public class PollService {
         return savePoll(pollMapper.mapDtoToEntity(pollDto));
     }
 
+    @Transactional
     public PollDto update(PollDto pollDto){
         return savePoll(pollMapper.mapDtoToEntity(pollDto));
     }

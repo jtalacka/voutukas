@@ -14,9 +14,9 @@ public class PropertiesDto {
 
     private int id;
 
-    /*@EqualsAndHashCode.Exclude
-    @ToString.Exclude               Probably not needed
-    private Set<PollDto> polls;*/
+    @EqualsAndHashCode.Exclude
+    @ToString.Exclude
+    private Set<PollDto> polls;
 
     private String name;
 

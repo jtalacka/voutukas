@@ -14,9 +14,9 @@ public class UserDto {
     @JsonProperty("user_id")
     private String id;
 
-    /*@EqualsAndHashCode.Exclude
-    @ToString.Exclude                   Probably not needed
-    private Set<OptionDto> answers;*/
+    @EqualsAndHashCode.Exclude
+    @ToString.Exclude
+    private Set<OptionDto> answers;
 
     private String name;
 
