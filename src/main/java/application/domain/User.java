@@ -16,7 +16,7 @@ public class User {
     @Id
     private String id;
 
-    @ManyToMany(mappedBy = "answers")
+    @ManyToMany(mappedBy = "answers",cascade = CascadeType.REMOVE)
     @EqualsAndHashCode.Exclude
     @ToString.Exclude
     private Set<Option> answers;

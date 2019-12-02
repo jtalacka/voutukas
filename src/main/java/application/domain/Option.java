@@ -3,6 +3,7 @@ package application.domain;
 import lombok.*;
 
 import javax.persistence.*;
+import javax.validation.constraints.Size;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -19,7 +20,7 @@ public class Option {
     private int id;
 
 
-    @ManyToMany(fetch = FetchType.LAZY)
+    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
     @JoinTable(name = "answers",
             joinColumns = { @JoinColumn(name = "option_id") },
             inverseJoinColumns = { @JoinColumn(name = "user_id") })
@@ -30,7 +31,8 @@ public class Option {
     @ManyToOne
     private Poll pollId;
 
-    @Column(name = "option_text")
+    @Column(name = "option_text", length = 3000)
+    @Size(max = 3000)
     private String optionText;
 
     public Option(Poll pollId) {
