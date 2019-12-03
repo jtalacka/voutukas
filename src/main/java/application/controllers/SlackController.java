@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("slack")
 public class SlackController {
-    private SlackManager slackManager;
+    private final SlackManager slackManager;
 
     public SlackController(){
         slackManager = new SlackManager();

@@ -3,12 +3,10 @@ package application.mapper;
 import application.domain.Option;
 import application.dto.OptionDto;
 import org.modelmapper.ModelMapper;
-import org.springframework.context.annotation.Bean;
-import org.springframework.stereotype.Component;
 
 public class OptionMapper {
 
-    ModelMapper modelMapper = new ModelMapper();
+    private final ModelMapper modelMapper = new ModelMapper();
 
     public Option map(OptionDto optionDto){
         Option option = modelMapper.map(optionDto, Option.class);

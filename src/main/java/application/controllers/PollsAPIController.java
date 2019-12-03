@@ -1,6 +1,5 @@
 package application.controllers;
 
-import application.dto.OptionDto;
 import application.dto.PollDto;
 import application.dto.PollIdDto;
 import application.service.PollService;
@@ -14,7 +13,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/poll")
 public class PollsAPIController {
-    PollService pollService;
+    private final PollService pollService;
     public PollsAPIController(PollService pollService)
     {
         this.pollService = pollService;

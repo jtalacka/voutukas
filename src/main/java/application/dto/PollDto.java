@@ -1,10 +1,8 @@
 package application.dto;
 
-import application.domain.PollID;
 import com.fasterxml.jackson.annotation.*;
 import lombok.*;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 

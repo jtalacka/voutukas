@@ -2,7 +2,6 @@ package application.controllers;
 
 import application.dto.UserDto;
 import application.service.UserService;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -12,7 +11,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/user")
 public class UsersAPIController {
-    private UserService userService;
+    private final UserService userService;
     public UsersAPIController(UserService userService)
     {
         this.userService = userService;
@@ -41,7 +40,7 @@ public class UsersAPIController {
 
 
     @DeleteMapping(value = "/{userId}")
-    public ResponseEntity deletePollById(@PathVariable String userId)
+    public ResponseEntity deleteUserById(@PathVariable String userId)
     {
         UserDto userDto = userService.findUserByID(userId);
         if(userDto == null)

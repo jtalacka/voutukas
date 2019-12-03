@@ -1,7 +1,6 @@
 package application.controllers;
 
 import application.dto.OptionDto;
-import application.dto.UserDto;
 import application.service.OptionService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -13,20 +12,20 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/answer")
 public class OptionsAPIController {
-    OptionService optionService;
+    private final OptionService optionService;
     public OptionsAPIController(OptionService optionService)
     {
         this.optionService = optionService;
     }
 
     @GetMapping(value = "/all")
-    public ResponseEntity<List<OptionDto>> getAllUsers()
+    public ResponseEntity<List<OptionDto>> getAllOptions()
     {
         return ResponseEntity.ok(optionService.findAllOptions());
     }
 
     @GetMapping(value = "/{answerId}")
-    public ResponseEntity<OptionDto> getUserById(@PathVariable int answerId)
+    public ResponseEntity<OptionDto> getAnswerById(@PathVariable int answerId)
     {
         OptionDto optionDto = optionService.findOptionById(answerId);
         if(optionDto == null)
@@ -42,7 +41,7 @@ public class OptionsAPIController {
 
     @DeleteMapping(value = "/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public void deletePollById(@PathVariable int id)
+    public void deleteOptionById(@PathVariable int id)
     {
         optionService.deleteOptionById(id);
     }

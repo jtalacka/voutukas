@@ -15,12 +15,11 @@ import java.util.List;
 @Service
 public class OptionService {
 
-    private OptionRepository optionRepository;
+    private final OptionRepository optionRepository;
     private OptionMapper optionMapper = new OptionMapper();
 
     public OptionService(OptionRepository optionRepository) {
         this.optionRepository = optionRepository;
-        this.optionMapper = optionMapper;
     }
 
     public OptionDto findOptionById(int id){
@@ -37,9 +36,7 @@ public class OptionService {
 
     private List<OptionDto> convertToDtoList(List<Option> optionList){
         List<OptionDto> optionDtoList = new ArrayList<>();
-        optionList.forEach(option -> {
-            optionDtoList.add(optionMapper.map(option));
-        });
+        optionList.forEach(option -> optionDtoList.add(optionMapper.map(option)));
         return optionDtoList;
     }
 

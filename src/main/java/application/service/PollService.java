@@ -4,13 +4,11 @@ import application.Repositories.PollRepository;
 import application.apimodels.OptionDataModel;
 import application.apimodels.PollResultsDataModel;
 import application.apimodels.PollsByUserIdModel;
-import application.domain.Option;
 import application.domain.Poll;
 import application.domain.PollID;
 import application.domain.User;
 import application.dto.OptionDto;
 import application.dto.PollDto;
-import application.dto.UserDto;
 import application.mapper.PollMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,18 +16,16 @@ import org.springframework.transaction.annotation.Transactional;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class PollService {
 
-    private PollRepository pollRepository;
+    private final PollRepository pollRepository;
     private PollMapper pollMapper = new PollMapper();
-    private OptionService optionService;
+    private final OptionService optionService;
 
     public PollService(PollRepository pollRepository, OptionService optionService) {
         this.pollRepository = pollRepository;
-        this.pollMapper = pollMapper;
         this.optionService = optionService;
     }
 
@@ -42,15 +38,13 @@ public class PollService {
     public PollsByUserIdModel findPollsByUserId(String id){
         List<Poll> pollList = pollRepository.findPollByUser(new User(id));
         List<PollDto> pollDtoList = new ArrayList();
-        pollList.forEach(poll -> {
-            pollDtoList.add(pollMapper.mapEntityToDtoWithOptions(poll, optionService.findAllPollOptions(poll.getId().getTimeStamp(), poll.getId().getChannelId())));
-        });
+        pollList.forEach(poll -> pollDtoList.add(pollMapper.mapEntityToDtoWithOptions(poll, optionService.findAllPollOptions(poll.getId().getTimeStamp(), poll.getId().getChannelId()))));
         return new PollsByUserIdModel(pollDtoList);
     }
     //CIA VA
     public PollResultsDataModel getPollResultsDataById(String timeStamp, String channelId){
         PollResultsDataModel pollResults = new PollResultsDataModel();
-        Integer totalVotes = 0;
+        int totalVotes = 0;
 
         List<OptionDto> options = optionService.findAllPollOptions(timeStamp, channelId);
 
@@ -87,9 +81,7 @@ public class PollService {
 
     private List<PollDto> convertToDtoList(List<Poll> pollList){
         List<PollDto> pollDtoList = new ArrayList();
-        pollList.forEach(poll -> {
-            pollDtoList.add(pollMapper.mapEntityToDto(poll));
-        });
+        pollList.forEach(poll -> pollDtoList.add(pollMapper.mapEntityToDto(poll)));
         return pollDtoList;
     }
 
@@ -110,9 +102,7 @@ public class PollService {
 
     @Transactional
     public PollDto insert(PollDto pollDto, List<OptionDto> optionDtoList){
-        optionDtoList.forEach(optionDto -> {
-            optionService.insert(optionDto);
-        });
+        optionDtoList.forEach(optionDto -> optionService.insert(optionDto));
         return savePoll(pollMapper.mapDtoToEntity(pollDto));
     }
 

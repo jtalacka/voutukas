@@ -2,7 +2,6 @@ package application.dto;
 
 import lombok.*;
 
-import java.util.HashSet;
 import java.util.Set;
 
 @Data

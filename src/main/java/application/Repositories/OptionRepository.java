@@ -3,7 +3,6 @@ package application.Repositories;
 
 import application.domain.Option;
 import application.domain.Poll;
-import application.domain.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;

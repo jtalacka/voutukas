@@ -2,18 +2,16 @@ package application.mapper;
 
 import application.domain.Poll;
 import application.domain.PollID;
-import application.domain.User;
 import application.dto.OptionDto;
 import application.dto.PollDto;
 import org.modelmapper.ModelMapper;
-import org.springframework.stereotype.Component;
 
 import java.util.List;
 
 
 public class PollMapper {
 
-    ModelMapper modelMapper = new ModelMapper();
+    private final ModelMapper modelMapper = new ModelMapper();
 
     public Poll mapDtoToEntity(PollDto pollDto){
         Poll poll = modelMapper.map(pollDto, Poll.class);

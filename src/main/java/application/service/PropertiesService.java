@@ -13,7 +13,7 @@ import java.util.List;
 public class PropertiesService {
 
     private PropertiesRepository propertiesRepository;
-    private PropertiesMapper propertiesMapper = new PropertiesMapper();
+    private final PropertiesMapper propertiesMapper = new PropertiesMapper();
 
     public PropertiesDto findPropertieByName(String name){
         return propertiesMapper.map(propertiesRepository.findProperty(name));

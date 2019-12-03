@@ -1,13 +1,8 @@
 package application.dto;
 
-import application.domain.Poll;
-import application.domain.PollID;
-import application.domain.User;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
-import java.util.HashSet;
 import java.util.Set;
 
 @Data

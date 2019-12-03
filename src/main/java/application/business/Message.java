@@ -9,38 +9,28 @@ import application.domain.PollID;
 import application.domain.User;
 import com.github.seratch.jslack.Slack;
 import com.github.seratch.jslack.api.methods.SlackApiException;
-import com.github.seratch.jslack.api.methods.response.chat.ChatDeleteResponse;
 import com.github.seratch.jslack.api.methods.response.chat.ChatPostMessageResponse;
 import com.github.seratch.jslack.api.methods.response.chat.ChatUpdateResponse;
 import com.github.seratch.jslack.api.model.block.*;
 import com.github.seratch.jslack.api.model.block.composition.PlainTextObject;
-import com.github.seratch.jslack.api.model.block.composition.TextObject;
 import com.github.seratch.jslack.api.model.block.element.ButtonElement;
 import com.github.seratch.jslack.app_backend.interactive_messages.payload.BlockActionPayload;
 import com.github.seratch.jslack.common.json.GsonFactory;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Configurable;
-import org.springframework.stereotype.Component;
-
-import javax.swing.*;
-import javax.swing.text.StyledEditorKit;
-import java.io.Console;
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
-public class Message {
+class Message {
     private String ChannelID;
-    private Slack slack;
-    private String token;
+    private final Slack slack;
+    private final String token;
     public Message(Slack slack,String token) {
         this.slack=slack;
         this.token=token;
 
 
     }
-    public List<LayoutBlock> ComposeMessage(String question, List<String> answers){
+    private List<LayoutBlock> ComposeMessage(String question, List<String> answers){
         List<LayoutBlock> blocks=new ArrayList<>();
 
         //temporary
@@ -77,16 +67,14 @@ public class Message {
         ChatPostMessageResponse postResponse = null;
         try {
             postResponse = slack.methods(token).chatPostMessage(req -> req.channel(channelId).blocks(ComposeMessage(question,answers)));
-            createPollTable(channelId,question,answers,postResponse.getTs().toString(),userId,userName);
+            createPollTable(channelId,question,answers, postResponse.getTs(),userId,userName);
 
-        } catch (SlackApiException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
+        } catch (SlackApiException | IOException e) {
             e.printStackTrace();
         }
 
     }
-    public void createPollTable(String channelId,String question,List<String> answers, String timeStamp,String userId,String userName){
+    private void createPollTable(String channelId, String question, List<String> answers, String timeStamp, String userId, String userName){
 
         PollRepository pollRepository=SpringContext.getBean(PollRepository.class);
         UserRepository userRepository=SpringContext.getBean(UserRepository.class);
@@ -96,10 +84,7 @@ public class Message {
         PollID pollId=new PollID(timeStamp,channelId);
         pollRepository.save(new Poll(pollId, question,user));
         answers.forEach(
-                answer->{
-                    optionRepository.save(new Option(null,new Poll(pollId, question,user),answer));
-
-                }
+                answer-> optionRepository.save(new Option(null,new Poll(pollId, question,user),answer))
         );
 
 
@@ -131,7 +116,7 @@ public class Message {
                     option.setAnswers(answers);
                     optionRepository.save(option);
                 }}
-        );}catch (Exception e){
+        );}catch (Exception ignored){
 
 
         }
@@ -142,14 +127,14 @@ public class Message {
     private User SetContainsUser(Set<User> answers,String userID){
 
         for (User u : answers) {
-            if(u.getId()==userID) {
+            if(u.getId().equals(userID)) {
             return u;
             }
             }
         return null;
     }
 
-    public void UpdateMessage(String timestamp,String channelID){
+    private void UpdateMessage(String timestamp, String channelID){
         PollRepository poll=SpringContext.getBean(PollRepository.class);
         OptionRepository options=SpringContext.getBean(OptionRepository.class);
         Poll currentPoll=poll.getOne(new PollID(timestamp,channelID));
@@ -180,23 +165,21 @@ public class Message {
 
         try {
             ChatUpdateResponse um = slack.methods(token).chatUpdate(req -> req.channel(currentPoll.getId().getChannelId()).ts(currentPoll.getId().getTimeStamp()).blocks(blocks));
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (SlackApiException e) {
+        } catch (IOException | SlackApiException e) {
             e.printStackTrace();
         }
 
 
     }
-    public String UserBuilder(Set<User>users){
-     String user=" ";
+    private String UserBuilder(Set<User> users){
+     StringBuilder user= new StringBuilder(" ");
 
         for (User u : users) {
-            user += u.getName()+" ";
+            user.append(u.getName()).append(" ");
         }
 
 
-        return user;
+        return user.toString();
     }
 
 

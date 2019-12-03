@@ -1,12 +1,9 @@
 package application.apimodels;
 
-import application.dto.OptionDto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.Generated;
-import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
