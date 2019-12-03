@@ -1,5 +1,6 @@
 package application.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
@@ -16,6 +17,7 @@ public class UserDto {
 
     @EqualsAndHashCode.Exclude
     @ToString.Exclude
+    @JsonIgnore
     private Set<OptionDto> answers;
 
     private String name;
