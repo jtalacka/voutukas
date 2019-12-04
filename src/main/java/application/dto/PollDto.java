@@ -33,4 +33,17 @@ public class PollDto {
         this.timeStamp = timeStamp;
         this.channelId = channelId;
     }
+
+    public PollDto(String timeStamp, String channelId, String name) {
+        this.timeStamp = timeStamp;
+        this.channelId = channelId;
+        this.name = name;
+    }
+
+    public PollDto(String timeStamp, String channelId, String name, UserDto owner) {
+        this.timeStamp = timeStamp;
+        this.channelId = channelId;
+        this.name = name;
+        this.owner = owner;
+    }
 }
