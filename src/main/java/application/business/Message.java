@@ -106,6 +106,8 @@ public class Message {
         PropertiesRepository pR=SpringContext.getBean(PropertiesRepository.class);
 
 
+
+
         User user=new User(userId,userName);
         userRepository.save(user);
         PollID pollId=new PollID(timeStamp,channelId);
@@ -168,7 +170,7 @@ public class Message {
                         //    if(!properties.contains(new Properties("multivote"))){
                         answers.remove(u);//}
                     }else {
-                        if(!UserAlreadyVotedOnce&&!propertyTrue("multivote",properties)) {
+                        if(!UserAlreadyVotedOnce||propertyTrue("multivote",properties)) {
                             answers.add(usr.getOne(userId));
                         }
                     }
@@ -236,10 +238,10 @@ public class Message {
                         .text(PlainTextObject.builder().text(answer.getOptionText()).build())
                         .accessory(ButtonElement.builder().text(PlainTextObject.builder().text("vote").build()).value(String.valueOf(answer.getId())).build())
                         .build());
+            if(!propertyTrue("anonymous",properties)){
             blocks.add(
                     SectionBlock.builder().text(PlainTextObject.builder().text(UserBuilder(answer.getAnswers())).build()).build());
 
-           if(propertyTrue("anonymous",properties)){
                 blocks.add(
                         SectionBlock.builder().text(PlainTextObject.builder().text(String.valueOf(answer.getAnswers().size())).build()).build());
             }
