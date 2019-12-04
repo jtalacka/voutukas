@@ -20,4 +20,7 @@ public class PropertiesDto {
 
     private String name;
 
+    public PropertiesDto(int id) {
+        this.id = id;
+    }
 }

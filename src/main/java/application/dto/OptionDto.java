@@ -20,22 +20,22 @@ public class OptionDto {
     @ToString.Exclude
     private Set<UserDto> answers;
 
-    private PollDto pollId;
+    private PollDto poll;
 
     private String optionText;
 
-    public OptionDto(PollDto pollId) {
-        this.pollId = pollId;
+    public OptionDto(PollDto poll) {
+        this.poll = poll;
     }
 
-    public OptionDto(PollDto pollId, String optionText) {
-        this.pollId = pollId;
+    public OptionDto(PollDto poll, String optionText) {
+        this.poll = poll;
         this.optionText = optionText;
     }
 
-    public OptionDto(Set<UserDto> answers, PollDto pollId, String optionText) {
+    public OptionDto(Set<UserDto> answers, PollDto poll, String optionText) {
         this.answers = answers;
-        this.pollId = pollId;
+        this.poll = poll;
         this.optionText = optionText;
     }
 }

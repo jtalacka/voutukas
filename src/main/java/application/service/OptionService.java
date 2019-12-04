@@ -60,6 +60,11 @@ public class OptionService {
     }
 
     @Transactional
+    public void deleteOptionsByPollID(String timestamp, String channelID){
+        optionRepository.deletePollOptionsByPollID(new Poll(new PollID(timestamp,channelID)));
+    }
+
+    @Transactional
     public void deleteOptionByPollIdAndOptionName(String timeStamp, String channelID, String optionName){
         optionRepository.deletePollOptionsByPollIdAndOptionText(new Poll(new PollID(timeStamp,channelID)),optionName);
     }

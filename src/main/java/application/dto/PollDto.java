@@ -21,12 +21,16 @@ public class PollDto {
     @ToString.Exclude
     private Set<PropertiesDto> Properties;
 
-    @EqualsAndHashCode.Exclude
-    @ToString.Exclude
-    private Set<Option> options;
+//    @EqualsAndHashCode.Exclude
+//    @ToString.Exclude
+//    private Set<Option> options;
 
     private String name;
 
     private UserDto owner;
 
+    public PollDto(String timeStamp, String channelId) {
+        this.timeStamp = timeStamp;
+        this.channelId = channelId;
+    }
 }

@@ -15,12 +15,16 @@ public class PropertiesService {
     private PropertiesRepository propertiesRepository;
     private PropertiesMapper propertiesMapper = new PropertiesMapper();
 
+    public PropertiesService(PropertiesRepository propertiesRepository) {
+        this.propertiesRepository = propertiesRepository;
+    }
+
     public PropertiesDto findPropertieByName(String name){
         return propertiesMapper.map(propertiesRepository.findProperty(name));
     }
 
     public List<PropertiesDto> findAllProperties(){
-         List<PropertiesDto> propertiesDtos = new ArrayList<>();
+        List<PropertiesDto> propertiesDtos = new ArrayList<>();
         for(Properties property : propertiesRepository.findAll()){
             propertiesDtos.add(propertiesMapper.map(property));
         }
