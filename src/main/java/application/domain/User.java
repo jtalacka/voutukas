@@ -16,10 +16,13 @@ public class User {
     @Id
     private String id;
 
-    @ManyToMany(mappedBy = "answers",cascade = CascadeType.REMOVE)
+    @ManyToMany(mappedBy = "answers")
     @EqualsAndHashCode.Exclude
     @ToString.Exclude
     private Set<Option> answers;
+
+    @OneToMany(mappedBy = "owner")
+    private Set<Poll> polls;
 
     @Column(name = "name")
     private String name;
