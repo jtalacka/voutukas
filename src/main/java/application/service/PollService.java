@@ -69,11 +69,12 @@ public class PollService {
     }
 
     @Transactional
-    public PollDto insert(PollDto pollDto, List<OptionDto> optionDtoList){
+        public PollDto insert(PollDto pollDto, List<OptionDto> optionDtoList){
+        PollDto tempPollDto = savePoll(pollMapper.map(pollDto));
         optionDtoList.forEach(optionDto -> {
             optionService.insert(optionDto);
         });
-        return savePoll(pollMapper.map(pollDto));
+        return tempPollDto;
     }
 
     @Transactional
