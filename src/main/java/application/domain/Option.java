@@ -20,7 +20,7 @@ public class Option {
     private int id;
 
 
-    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "answers",
             joinColumns = { @JoinColumn(name = "option_id") },
             inverseJoinColumns = { @JoinColumn(name = "user_id") })

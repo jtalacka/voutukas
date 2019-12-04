@@ -1,5 +1,6 @@
 package application.dto;
 
+import application.domain.Option;
 import application.domain.PollID;
 import lombok.*;
 
@@ -19,6 +20,10 @@ public class PollDto {
     @EqualsAndHashCode.Exclude
     @ToString.Exclude
     private Set<PropertiesDto> Properties;
+
+    @EqualsAndHashCode.Exclude
+    @ToString.Exclude
+    private Set<Option> options;
 
     private String name;
 
