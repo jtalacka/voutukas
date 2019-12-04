@@ -29,10 +29,10 @@ public class Option {
     private Set<User> answers = new HashSet<>();
 
 
-    @ManyToOne(fetch=FetchType.LAZY)
+    @ManyToOne(fetch=FetchType.EAGER)
     @JoinColumns({
-            @JoinColumn(name = "poll_id_channel_id", insertable = false, updatable = false),
-            @JoinColumn(name = "poll_id_time_stamp", insertable = false, updatable = false)
+            @JoinColumn(name = "poll_id_channel_id"),
+            @JoinColumn(name = "poll_id_time_stamp")
     })
     private Poll poll;
 

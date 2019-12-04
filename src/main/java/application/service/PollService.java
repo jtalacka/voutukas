@@ -76,14 +76,13 @@ public class PollService {
         });
         return tempPollDto;
     }
-
     @Transactional
     public PollDto update(PollDto pollDto){
         return savePoll(pollMapper.map(pollDto));
     }
 
     private PollDto savePoll(Poll poll){
-        pollRepository.save(poll);
+        pollRepository.saveAndFlush(poll);
         return findPollByID(poll.getId().getTimeStamp(),poll.getId().getChannelId());
     }
 }
