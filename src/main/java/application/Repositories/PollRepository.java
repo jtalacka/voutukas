@@ -17,7 +17,7 @@ public interface PollRepository extends JpaRepository<Poll, PollID> {
 
     List<Poll> findByIdChannelId(String channelId);
 
-    @Query("delete from Poll where owner = ?1")
-    void deleteAllPollByUser(User user);
+    @Query("select p from Poll p where p.owner = ?1")
+    List<Poll> selectAllPollsByUser(User user);
 
 }

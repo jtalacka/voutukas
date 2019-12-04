@@ -52,12 +52,15 @@ public class PollService {
 
     @Transactional
     public void deletePollById(String timeStamp, String channelID){
+        optionService.deleteOptionsByPollID(timeStamp,channelID);
         pollRepository.deleteById(new PollID(timeStamp,channelID));
     }
 
     @Transactional
     public void deleteAllUsersPolls(String id){
-        pollRepository.deleteAllPollByUser(new User(id));
+        pollRepository.selectAllPollsByUser(new User(id)).forEach(poll -> {
+            deletePollById(poll.getId().getTimeStamp(),poll.getId().getChannelId());
+        });
     }
 
     @Transactional

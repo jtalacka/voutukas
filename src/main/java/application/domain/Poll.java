@@ -23,9 +23,6 @@ public class Poll {
     @ToString.Exclude
     private Set<Properties> Properties = new HashSet<>();
 
-    @OneToMany(mappedBy = "pollId")
-    private Set<Option> options;
-
     @Column(name = "name", length = 3000)
     @Size(max = 3000)
     private String name;

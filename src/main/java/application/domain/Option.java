@@ -28,25 +28,30 @@ public class Option {
     @ToString.Exclude
     private Set<User> answers = new HashSet<>();
 
-    @ManyToOne
-    private Poll pollId;
+
+    @ManyToOne(fetch=FetchType.LAZY)
+    @JoinColumns({
+            @JoinColumn(name = "poll_id_channel_id", insertable = false, updatable = false),
+            @JoinColumn(name = "poll_id_time_stamp", insertable = false, updatable = false)
+    })
+    private Poll poll;
 
     @Column(name = "option_text", length = 3000)
     @Size(max = 3000)
     private String optionText;
 
-    public Option(Poll pollId) {
-        this.pollId = pollId;
+    public Option(Poll poll) {
+        this.poll = poll;
     }
 
-    public Option(Poll pollId, String optionText) {
-        this.pollId = pollId;
+    public Option(Poll poll, String optionText) {
+        this.poll = poll;
         this.optionText = optionText;
     }
 
-    public Option(Set<User> answers, Poll pollId, String optionText) {
+    public Option(Set<User> answers, Poll poll, String optionText) {
         this.answers = answers;
-        this.pollId = pollId;
+        this.poll = poll;
         this.optionText = optionText;
     }
 
