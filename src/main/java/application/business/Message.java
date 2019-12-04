@@ -9,7 +9,14 @@ import application.domain.Poll;
 import application.domain.PollID;
 import application.domain.Properties;
 import application.domain.User;
+import application.dto.OptionDto;
+import application.dto.PollDto;
+import application.dto.PropertiesDto;
+import application.dto.UserDto;
 import application.models.CreatePollOptions;
+import application.service.OptionService;
+import application.service.PollService;
+import application.service.PropertiesService;
 import com.github.seratch.jslack.Slack;
 import com.github.seratch.jslack.api.methods.SlackApiException;
 import com.github.seratch.jslack.api.methods.response.chat.ChatDeleteResponse;
@@ -88,27 +95,43 @@ public class Message {
         ChatPostMessageResponse postResponse = null;
         try {
             postResponse = slack.methods(token).chatPostMessage(req -> req.channel(channelId).blocks(ComposeMessage(question,answers,pollOptions)));
-            createPollTable(channelId,question,answers,postResponse.getTs().toString(),userId,userName,pollOptions);
+
+            createPollTable(channelId,question,answers,postResponse.getTs(),userId,userName,pollOptions);
 
         } catch (SlackApiException e) {
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
+            System.out.println(postResponse);
         }
 
     }
     public void createPollTable(String channelId,String question,List<String> answers, String timeStamp,String userId,String userName, CreatePollOptions pollOptions){
         System.out.println(pollOptions.allowUsersToAddOptions+" "+pollOptions.anonymous+" "+pollOptions.multivote);
 
-        PollRepository pollRepository=SpringContext.getBean(PollRepository.class);
+        PollService pollService=SpringContext.getBean(PollService.class);
         UserRepository userRepository=SpringContext.getBean(UserRepository.class);
-        OptionRepository optionRepository=SpringContext.getBean(OptionRepository.class);
+        OptionRepository optionService=SpringContext.getBean(OptionRepository.class);
         PropertiesRepository pR=SpringContext.getBean(PropertiesRepository.class);
 
+        PropertiesService propertiesService=SpringContext.getBean(PropertiesService.class);
 
+        Set<PropertiesDto> propertiesSet = new HashSet<>();
+        if(pollOptions.multivote==true) {
+            propertiesSet.add(propertiesService.findPropertieByName("anonymous"));
+        }if(pollOptions.anonymous==true) {
+            propertiesSet.add(propertiesService.findPropertieByName("multivote"));
+        }if(pollOptions.allowUsersToAddOptions==true) {
+            propertiesSet.add(propertiesService.findPropertieByName("allowUsersToAddOptions"));
+        }
+        PollDto poll=new PollDto(timeStamp,channelId,propertiesSet, new UserDto(userId));
+        List<OptionDto>option=new LinkedList<>();
+        pollService.insert(poll);
+        for(String a:answers){
+            optionService.save(new OptionDto(poll,a));
+        }
 
-
-        User user=new User(userId,userName);
+     /*   User user=new User(userId,userName);
         userRepository.save(user);
         PollID pollId=new PollID(timeStamp,channelId);
         Poll tempPoll=new Poll(pollId, question,user);
@@ -116,29 +139,24 @@ public class Message {
         tempPoll.setProperties(p);
         for (Properties u : p) {
             pR.save(u);
-        }
-        pollRepository.save(tempPoll);
-        answers.forEach(
-                answer->{
-                    optionRepository.save(new Option(null,new Poll(pollId, question,user),answer));
+        }*/
+        //pollRepository.save(tempPoll);
 
-                }
-        );
 
 
 
     }
-    private Set<Properties> PropertySet(CreatePollOptions pollOptions){
-        Set<Properties> set=new HashSet<>();
+
+    private String PropertyType(CreatePollOptions pollOptions){
         if(pollOptions.multivote==true) {
-        set.add(new Properties("multivote"));
+            return "multivoce";
         }if(pollOptions.anonymous==true) {
-            set.add(new Properties("anonymous"));
+            return "anonymous";
         }if(pollOptions.allowUsersToAddOptions==true) {
-            set.add(new Properties("allowUsersToAddOptions"));
+            return"allowUsersToAddOptions";
         }
 
-        return set;
+        return null;
     }
     public void OnUserVote(String payload){
         BlockActionPayload pld = GsonFactory.createSnakeCase().fromJson(payload, BlockActionPayload.class);

@@ -12,4 +12,6 @@ import java.util.Set;
 
 @Repository
 public interface PropertiesRepository extends JpaRepository<Properties, Integer> {
+    @Query("SELECT p FROM Properties p WHERE p.name = ?1")
+    Properties findProperty(String name);
 }

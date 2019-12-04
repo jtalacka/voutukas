@@ -52,12 +52,15 @@ public class PollService {
 
     @Transactional
     public void deletePollById(String timeStamp, String channelID){
+        optionService.deleteOptionsByPollID(timeStamp,channelID);
         pollRepository.deleteById(new PollID(timeStamp,channelID));
     }
 
     @Transactional
     public void deleteAllUsersPolls(String id){
-        pollRepository.deleteAllPollByUser(new User(id));
+        pollRepository.selectAllPollsByUser(new User(id)).forEach(poll -> {
+            deletePollById(poll.getId().getTimeStamp(),poll.getId().getChannelId());
+        });
     }
 
     @Transactional
@@ -66,11 +69,9 @@ public class PollService {
     }
 
     @Transactional
-    public PollDto insert(PollDto pollDto, List<OptionDto> optionDtoList){
-        optionDtoList.forEach(optionDto -> {
-            optionService.insert(optionDto);
-        });
-        return savePoll(pollMapper.map(pollDto));
+    public PollDto insert(PollDto pollDto){
+        PollDto tempPollDto = savePoll(pollMapper.map(pollDto));
+        return tempPollDto;
     }
 
     @Transactional

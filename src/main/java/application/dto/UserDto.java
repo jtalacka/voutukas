@@ -1,5 +1,6 @@
 package application.dto;
 
+import application.domain.Poll;
 import lombok.*;
 
 import java.util.Set;
@@ -13,10 +14,18 @@ public class UserDto {
 
     private String id;
 
-    @EqualsAndHashCode.Exclude
-    @ToString.Exclude
-    private Set<OptionDto> answers;
+//    @EqualsAndHashCode.Exclude
+//    @ToString.Exclude
+//    private Set<OptionDto> answers;
 
+//    @EqualsAndHashCode.Exclude
+//    @ToString.Exclude
+//    private Set<Poll> polls;
+    
     private String name;
+
+    public UserDto(String id) {
+        this.id = id;
+    }
 
 }
