@@ -168,7 +168,7 @@ public class Message {
                         //    if(!properties.contains(new Properties("multivote"))){
                         answers.remove(u);//}
                     }else {
-                        if(!UserAlreadyVotedOnce) {
+                        if(!UserAlreadyVotedOnce&&!propertyTrue("multivote",properties)) {
                             answers.add(usr.getOne(userId));
                         }
                     }
@@ -204,6 +204,14 @@ public class Message {
         }
         return false;
     }
+    public Boolean propertyTrue(String property,Set<Properties> properties){
+        for(Properties p:properties){
+            if(p.getName().equals(property)) {
+             return true;
+            }
+        }
+        return false;
+    }
 
     public void UpdateMessage(String timestamp,String channelID){
         PollRepository poll=SpringContext.getBean(PollRepository.class);
@@ -231,12 +239,12 @@ public class Message {
             blocks.add(
                     SectionBlock.builder().text(PlainTextObject.builder().text(UserBuilder(answer.getAnswers())).build()).build());
 
-       /*     if(!properties.contains(new Properties("anonymous"))){
+           if(propertyTrue("anonymous",properties)){
                 blocks.add(
                         SectionBlock.builder().text(PlainTextObject.builder().text(String.valueOf(answer.getAnswers().size())).build()).build());
-            }*/
+            }
         });
-            if(!properties.contains(new Properties("allowUsersToAddOptions"))){
+            if(propertyTrue("allowUsersToAddOptions",properties)){
             blocks.add(
                     SectionBlock.builder()
                             .text(PlainTextObject.builder().text("something").build())
