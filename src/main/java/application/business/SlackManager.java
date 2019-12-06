@@ -141,7 +141,15 @@ public class SlackManager {
         BlockActionPayload payload = GsonFactory.createSnakeCase().fromJson(jsonPayload, BlockActionPayload.class);
         if(payload.getContainer().getType().equals("message")){
             Message message= new Message(slack,token);
-            message.OnUserVote(jsonPayload);
+            if(payload.getActions().get(0).getValue().equals("delete"))
+            {
+                message.OnPollDelete(jsonPayload);
+            }
+            else
+            {
+                message.OnUserVote(jsonPayload);
+            }
+
             return "";
         }
 

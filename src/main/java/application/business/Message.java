@@ -19,6 +19,7 @@ import application.service.PollService;
 import application.service.PropertiesService;
 import com.github.seratch.jslack.Slack;
 import com.github.seratch.jslack.api.methods.SlackApiException;
+import com.github.seratch.jslack.api.methods.request.chat.ChatDeleteRequest;
 import com.github.seratch.jslack.api.methods.response.chat.ChatDeleteResponse;
 import com.github.seratch.jslack.api.methods.response.chat.ChatPostMessageResponse;
 import com.github.seratch.jslack.api.methods.response.chat.ChatUpdateResponse;
@@ -89,8 +90,8 @@ public class Message {
         //deleteButton
         blocks.add(
                 SectionBlock.builder()
-                .accessory(ButtonElement.builder().text(PlainTextObject.builder().text("DeleteOption").build()).value("delete").build())
-                .build()
+                        .text(PlainTextObject.builder().text(" ").build())
+                        .accessory(ButtonElement.builder().text(PlainTextObject.builder().text("Delete Poll").build()).value("delete").build()).build()
         );
 
 
@@ -176,6 +177,7 @@ public class Message {
         PollRepository poll=SpringContext.getBean(PollRepository.class);
         Poll currentPoll=poll.getOne(new PollID(timestamp,channelId));
         Set<Properties> properties=currentPoll.getProperties();
+        System.out.println(voteValue);
 
         OptionRepository optionRepository=SpringContext.getBean(OptionRepository.class);
         PropertiesRepository propertiesRepository=SpringContext.getBean(PropertiesRepository.class);
@@ -209,7 +211,7 @@ public class Message {
 
             }
 
-        UpdateMessage(timestamp,channelId);
+        UpdateMessage(timestamp,channelId,false);
 
     //    System.out.println(pld.getActions().get(0).getValue());
     }
@@ -240,7 +242,7 @@ public class Message {
         return false;
     }
 
-    public void UpdateMessage(String timestamp,String channelID){
+    public void UpdateMessage(String timestamp,String channelID, boolean triedToDelete){
         PollRepository poll=SpringContext.getBean(PollRepository.class);
         OptionRepository options=SpringContext.getBean(OptionRepository.class);
         Poll currentPoll=poll.getOne(new PollID(timestamp,channelID));
@@ -295,6 +297,21 @@ public class Message {
             );}
         blocks.add(DividerBlock.builder().build());
 
+        if(triedToDelete)
+        {
+            blocks.add(
+                    SectionBlock.builder()
+                            .text(PlainTextObject.builder().text("You are not the owner of this poll").build()).build());
+        }
+        else
+        {
+            blocks.add(
+                    SectionBlock.builder()
+                            .text(PlainTextObject.builder().text(" ").build())
+                            .accessory(ButtonElement.builder().text(PlainTextObject.builder().text("Delete Poll").build()).value("delete").style("danger").build()).build()
+            );
+        }
+
 
         try {
             ChatUpdateResponse um = slack.methods(token).chatUpdate(req -> req.channel(currentPoll.getId().getChannelId()).ts(currentPoll.getId().getTimeStamp()).blocks(blocks));
@@ -343,5 +360,36 @@ public class Message {
     }
 
 
+    public void OnPollDelete(String payload) {
+        BlockActionPayload pld = GsonFactory.createSnakeCase().fromJson(payload, BlockActionPayload.class);
+        String timestamp=pld.getContainer().getMessageTs();
+        String channelId=pld.getContainer().getChannelId();
+        String userId=pld.getUser().getId();
 
+        PollRepository poll=SpringContext.getBean(PollRepository.class);
+        Poll currentPoll=poll.getOne(new PollID(timestamp,channelId));
+        User owner = currentPoll.getOwner();
+
+        UserRepository userRepository = SpringContext.getBean(UserRepository.class);
+        User currentUser = userRepository.getOne(userId);
+
+        if(currentUser != owner)
+        {
+            UpdateMessage(timestamp,channelId,true);
+        }
+        else
+        {
+            Slack slack = new Slack();
+            try {
+                slack.methods().chatDelete(
+                        ChatDeleteRequest.builder().token(token).channel(channelId).ts(timestamp).build()
+                );
+            } catch (IOException | SlackApiException e) {
+                e.printStackTrace();
+            }
+            //poll.deleteById(currentPoll.getId());
+        }
+
+
+    }
 }
