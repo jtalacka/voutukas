@@ -23,6 +23,7 @@ import com.github.seratch.jslack.api.methods.response.chat.ChatDeleteResponse;
 import com.github.seratch.jslack.api.methods.response.chat.ChatPostMessageResponse;
 import com.github.seratch.jslack.api.methods.response.chat.ChatUpdateResponse;
 import com.github.seratch.jslack.api.model.block.*;
+import com.github.seratch.jslack.api.model.block.composition.MarkdownTextObject;
 import com.github.seratch.jslack.api.model.block.composition.PlainTextObject;
 import com.github.seratch.jslack.api.model.block.composition.TextObject;
 import com.github.seratch.jslack.api.model.block.element.ButtonElement;
@@ -257,6 +258,12 @@ public class Message {
         int finalOverallNumber = overallNumber;
         op.forEach(answer->{
             int temp=answer.getAnswers().size();
+            int percentage;
+            if(finalOverallNumber==0){
+                percentage=0;
+            }else{
+                percentage=temp*100/finalOverallNumber;
+            }
 
             blocks.add(
                 SectionBlock.builder()
@@ -264,8 +271,8 @@ public class Message {
                         .accessory(ButtonElement.builder().text(PlainTextObject.builder().text("vote").build()).value(String.valueOf(answer.getId())).build())
                         .build());
             blocks.add(
-                    SectionBlock.builder().text(PlainTextObject.builder().text(PercentangeDisplay(temp,finalOverallNumber)).build()).build());
-           if(propertyTrue("anonymous",properties)){
+                    SectionBlock.builder().text(MarkdownTextObject.builder().text(PercentangeDisplay(temp,finalOverallNumber)+"  "+String.valueOf(percentage)+"% ("+String.valueOf(temp)+")").build()).build());
+           if(!propertyTrue("anonymous",properties)){
                 blocks.add(
                         SectionBlock.builder().text(PlainTextObject.builder().text(UserBuilder(answer.getAnswers())).build()).build());
 
@@ -293,15 +300,27 @@ public class Message {
 
     }
     public String PercentangeDisplay(int current,int overall){
-        String Symbols=" ";
+        String Symbols="`";
+        int lineLenght=30;
         if(overall!=0){
-            System.out.println(20*current/overall);
-        for(int i=0;i<39*current/overall;i++)
+            int calculator=lineLenght*current/overall;
+        for(int i=0;i<calculator;i++)
         {
             Symbols+="█";
-        }}
+        }
+        for(int i=calculator;i<lineLenght-3;i++){
+            Symbols+="⠀";
+        }
 
-        return Symbols;
+        }else{
+            for(int i=0;i<lineLenght-8;i++)
+            {
+                Symbols+="⠀";
+            }
+
+        }
+
+        return Symbols+"`";
 
     }
     public String UserBuilder(Set<User>users){
