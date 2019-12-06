@@ -86,6 +86,13 @@ public class Message {
             );}
         blocks.add(DividerBlock.builder().build());
 
+        //deleteButton
+        blocks.add(
+                SectionBlock.builder()
+                .accessory(ButtonElement.builder().text(PlainTextObject.builder().text("DeleteOption").build()).value("delete").build())
+                .build()
+        );
+
 
 
 
