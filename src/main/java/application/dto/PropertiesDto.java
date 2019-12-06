@@ -23,4 +23,7 @@ public class PropertiesDto {
     public PropertiesDto(int id) {
         this.id = id;
     }
+    public PropertiesDto(String name) {
+        this.name = name;
+    }
 }

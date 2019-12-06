@@ -6,6 +6,7 @@ import application.domain.PollID;
 import application.domain.User;
 import application.dto.OptionDto;
 import application.dto.PollDto;
+import application.dto.PropertiesDto;
 import application.mapper.PollMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,6 +20,7 @@ public class PollService {
     private PollRepository pollRepository;
     private PollMapper pollMapper = new PollMapper();
     private OptionService optionService;
+    private PropertiesService propertiesService;
 
     public PollService(PollRepository pollRepository, OptionService optionService) {
         this.pollRepository = pollRepository;
@@ -69,18 +71,21 @@ public class PollService {
     }
 
     @Transactional
-    public PollDto insert(PollDto pollDto){
+
+        public PollDto insert(PollDto pollDto, List<OptionDto> optionDtoList){
         PollDto tempPollDto = savePoll(pollMapper.map(pollDto));
+        optionDtoList.forEach(optionDto -> {
+            optionService.insert(optionDto);
+        });
         return tempPollDto;
     }
-
     @Transactional
     public PollDto update(PollDto pollDto){
         return savePoll(pollMapper.map(pollDto));
     }
 
     private PollDto savePoll(Poll poll){
-        pollRepository.save(poll);
+        pollRepository.saveAndFlush(poll);
         return findPollByID(poll.getId().getTimeStamp(),poll.getId().getChannelId());
     }
 }

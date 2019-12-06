@@ -32,6 +32,7 @@ import com.github.seratch.jslack.common.json.GsonFactory;
 import org.hibernate.boot.Metadata;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 import javax.swing.*;
@@ -95,7 +96,6 @@ public class Message {
         ChatPostMessageResponse postResponse = null;
         try {
             postResponse = slack.methods(token).chatPostMessage(req -> req.channel(channelId).blocks(ComposeMessage(question,answers,pollOptions)));
-
             createPollTable(channelId,question,answers,postResponse.getTs(),userId,userName,pollOptions);
 
         } catch (SlackApiException e) {
@@ -110,27 +110,26 @@ public class Message {
         System.out.println(pollOptions.allowUsersToAddOptions+" "+pollOptions.anonymous+" "+pollOptions.multivote);
 
         PollService pollService=SpringContext.getBean(PollService.class);
-        UserRepository userRepository=SpringContext.getBean(UserRepository.class);
-        OptionRepository optionService=SpringContext.getBean(OptionRepository.class);
-        PropertiesRepository pR=SpringContext.getBean(PropertiesRepository.class);
+        OptionService optionService=SpringContext.getBean(OptionService.class);
+        PropertiesService pR=SpringContext.getBean(PropertiesService.class);
 
         PropertiesService propertiesService=SpringContext.getBean(PropertiesService.class);
 
         Set<PropertiesDto> propertiesSet = new HashSet<>();
         if(pollOptions.multivote==true) {
-            propertiesSet.add(propertiesService.findPropertieByName("anonymous"));
-        }if(pollOptions.anonymous==true) {
             propertiesSet.add(propertiesService.findPropertieByName("multivote"));
+        }if(pollOptions.anonymous==true) {
+            propertiesSet.add(propertiesService.findPropertieByName("anonymous"));
         }if(pollOptions.allowUsersToAddOptions==true) {
             propertiesSet.add(propertiesService.findPropertieByName("allowUsersToAddOptions"));
         }
-        PollDto poll=new PollDto(timeStamp,channelId,propertiesSet, new UserDto(userId));
+        PollDto poll=new PollDto(timeStamp,channelId,question, new UserDto(userId),propertiesSet);
         List<OptionDto>option=new LinkedList<>();
         pollService.insert(poll);
-        for(String a:answers){
-            optionService.save(new OptionDto(poll,a));
-        }
 
+        for(String a:answers){
+            optionService.insert(new OptionDto(poll,a));
+        }
      /*   User user=new User(userId,userName);
         userRepository.save(user);
         PollID pollId=new PollID(timeStamp,channelId);
@@ -251,18 +250,27 @@ public class Message {
                 .build();
         blocks.add(Question);
         blocks.add(DividerBlock.builder().build());
-        op.forEach(answer->{blocks.add(
+        int overallNumber=0;
+        for(Option o:op){
+            overallNumber+=o.getAnswers().size();
+        }
+        int finalOverallNumber = overallNumber;
+        op.forEach(answer->{
+            int temp=answer.getAnswers().size();
+
+            blocks.add(
                 SectionBlock.builder()
                         .text(PlainTextObject.builder().text(answer.getOptionText()).build())
                         .accessory(ButtonElement.builder().text(PlainTextObject.builder().text("vote").build()).value(String.valueOf(answer.getId())).build())
                         .build());
-            if(!propertyTrue("anonymous",properties)){
             blocks.add(
-                    SectionBlock.builder().text(PlainTextObject.builder().text(UserBuilder(answer.getAnswers())).build()).build());
-
+                    SectionBlock.builder().text(PlainTextObject.builder().text(PercentangeDisplay(temp,finalOverallNumber)).build()).build());
+           if(propertyTrue("anonymous",properties)){
                 blocks.add(
-                        SectionBlock.builder().text(PlainTextObject.builder().text(String.valueOf(answer.getAnswers().size())).build()).build());
+                        SectionBlock.builder().text(PlainTextObject.builder().text(UserBuilder(answer.getAnswers())).build()).build());
+
             }
+
         });
             if(propertyTrue("allowUsersToAddOptions",properties)){
             blocks.add(
@@ -284,11 +292,24 @@ public class Message {
 
 
     }
+    public String PercentangeDisplay(int current,int overall){
+        String Symbols=" ";
+        if(overall!=0){
+            System.out.println(20*current/overall);
+        for(int i=0;i<39*current/overall;i++)
+        {
+            Symbols+="█";
+        }}
+
+        return Symbols;
+
+    }
     public String UserBuilder(Set<User>users){
      String user=" ";
 
         for (User u : users) {
-            user += u.getName()+" ";
+
+            user +="<@"+u.getName()+">";
         }
 
 

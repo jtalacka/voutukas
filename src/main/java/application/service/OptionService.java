@@ -79,8 +79,9 @@ public class OptionService {
         return saveOption(optionMapper.map(optionDto));
     }
 
+    @Transactional
     private OptionDto saveOption(Option option){
-        optionRepository.save(option);
+        optionRepository.saveAndFlush(option);
         return findOptionById(option.getId());
     }
 
