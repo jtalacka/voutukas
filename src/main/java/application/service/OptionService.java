@@ -60,6 +60,11 @@ public class OptionService {
     }
 
     @Transactional
+    public void deleteOption(OptionDto optionDto){
+        optionRepository.delete(optionMapper.map(optionDto));
+    }
+
+    @Transactional
     public void deleteOptionsByPollID(String timestamp, String channelID){
         optionRepository.deletePollOptionsByPollID(new Poll(new PollID(timestamp,channelID)));
     }

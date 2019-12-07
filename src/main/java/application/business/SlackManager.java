@@ -46,6 +46,10 @@ public class SlackManager {
 
     //Modal submission Callbacks
     private final String CALLBACK_MODAL_CREATE_POLL = "callback_create_poll";
+    public static final String CALLBACK_MODAL_ADD_OPTION = "callback_add_option";
+
+
+    public static final String MESSAGE_ACTION_ID_ADD_OPTION = "message_add_option";
 
     //Constants
     private Slack slack;
@@ -140,17 +144,22 @@ public class SlackManager {
     public String handleBlockAction(String jsonPayload) {
         BlockActionPayload payload = GsonFactory.createSnakeCase().fromJson(jsonPayload, BlockActionPayload.class);
         if(payload.getContainer().getType().equals("message")){
+            String actionId = payload.getActions().get(0).getActionId();
             Message message= new Message(slack,token);
-            if(payload.getActions().get(0).getValue().equals("delete"))
-            {
-                message.OnPollDelete(jsonPayload);
+            switch (actionId) {
+                case "delete":
+                    message.OnPollDelete(jsonPayload);
+                    return "";
+                case "renew":
+                    message.OnPolRenew(jsonPayload);
+                    return "";
+                case "choices":
+                    handleMessageBlockAction(jsonPayload);
+                    return "";
+                default:
+                    message.OnUserVote(jsonPayload);
+                    return "";
             }
-            else
-            {
-                message.OnUserVote(jsonPayload);
-            }
-
-            return "";
         }
 
         View payloadView = payload.getView();
@@ -242,6 +251,11 @@ public class SlackManager {
 
     public String handleViewSubmission(String jsonPayload) {
         ViewSubmissionPayload payload = GsonFactory.createSnakeCase().fromJson(jsonPayload, ViewSubmissionPayload.class);
+        if(payload.getView().getTitle().getText().equals("Add poll option")){
+            Message message = new Message(slack,token);
+            message.OnOptionCreation(jsonPayload);
+            return "";
+        }
         String callback = payload.getView().getCallbackId();
         ViewState state = payload.getView().getState();
 
@@ -309,6 +323,39 @@ public class SlackManager {
         }
 
         return ActionsBlock.builder().blockId(BLOCK_ID_POLL_OPTIONS_BLOCK).elements(elements).build();
+    }
+
+    public void handleMessageBlockAction(String payload){
+
+            BlockActionPayload pld = GsonFactory.createSnakeCase().fromJson(payload, BlockActionPayload.class);
+            String triggerId = pld.getTriggerId();
+
+            List<LayoutBlock> blocks = new LinkedList<>();
+            blocks.add(
+                    InputBlock.builder()
+                            .label(PlainTextObject.builder().text("New question option").build())
+                            .element(PlainTextInputElement.builder().placeholder(PlainTextObject.builder().text("New option").build()).build())
+                            .build()
+            );
+
+            View view = View.builder()
+                    .type("modal")
+                    .callbackId(CALLBACK_MODAL_ADD_OPTION)
+                    .title(ViewTitle.builder().type("plain_text").text("Add poll option").build())
+                    .submit(ViewSubmit.builder().type("plain_text").text("Submit").build())
+                    .close(ViewClose.builder().type("plain_text").text("Cancel").build())
+                    .notifyOnClose(false)
+                    .blocks(blocks)
+                    .privateMetadata(pld.getContainer().getMessageTs() + "&" + pld.getContainer().getChannelId())
+                    .build();
+
+            try {
+                slack.methods(token).viewsOpen(req -> req
+                        .view(view)
+                        .triggerId(triggerId));
+            } catch (IOException | SlackApiException e) {
+                e.printStackTrace();
+            }
     }
 
 }

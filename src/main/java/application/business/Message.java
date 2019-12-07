@@ -17,6 +17,7 @@ import application.models.CreatePollOptions;
 import application.service.OptionService;
 import application.service.PollService;
 import application.service.PropertiesService;
+import application.service.UserService;
 import com.github.seratch.jslack.Slack;
 import com.github.seratch.jslack.api.methods.SlackApiException;
 import com.github.seratch.jslack.api.methods.request.chat.ChatDeleteRequest;
@@ -27,8 +28,12 @@ import com.github.seratch.jslack.api.model.block.*;
 import com.github.seratch.jslack.api.model.block.composition.MarkdownTextObject;
 import com.github.seratch.jslack.api.model.block.composition.PlainTextObject;
 import com.github.seratch.jslack.api.model.block.composition.TextObject;
+import com.github.seratch.jslack.api.model.block.element.BlockElement;
 import com.github.seratch.jslack.api.model.block.element.ButtonElement;
+import com.github.seratch.jslack.api.model.view.View;
+import com.github.seratch.jslack.api.model.view.ViewState;
 import com.github.seratch.jslack.app_backend.interactive_messages.payload.BlockActionPayload;
+import com.github.seratch.jslack.app_backend.views.payload.ViewSubmissionPayload;
 import com.github.seratch.jslack.common.json.GsonFactory;
 
 import org.hibernate.boot.Metadata;
@@ -78,23 +83,17 @@ public class Message {
                );
                counter.incrementAndGet();
            });
-        if(pollOptions.allowUsersToAddOptions==true){
-            blocks.add(
-                    SectionBlock.builder()
-                    .text(PlainTextObject.builder().text("something").build())
-                    .accessory(ButtonElement.builder().text(PlainTextObject.builder().text("AddOption").build()).value("option").build())
-                    .build()
-            );}
+        List<BlockElement> blockElements = new ArrayList<>();
+
         blocks.add(DividerBlock.builder().build());
 
-        //deleteButton
-        blocks.add(
-                SectionBlock.builder()
-                        .text(PlainTextObject.builder().text(" ").build())
-                        .accessory(ButtonElement.builder().text(PlainTextObject.builder().text("Delete Poll").build()).value("delete").build()).build()
-        );
+        blockElements.add(ButtonElement.builder().text(PlainTextObject.builder().text("Delete Poll").build()).actionId("delete").style("danger").build());
+        blockElements.add(ButtonElement.builder().text(PlainTextObject.builder().text("Renew Poll").build()).actionId("renew").build());
 
+        if(pollOptions.allowUsersToAddOptions==true){
+            blockElements.add(ButtonElement.builder().text(PlainTextObject.builder().text("Add choices").build()).actionId("choices").build());}
 
+        blocks.add(ActionsBlock.builder().elements(blockElements).build());
 
 
 
@@ -262,11 +261,16 @@ public class Message {
         blocks.add(DividerBlock.builder().build());
         int overallNumber=0;
         for(Option o:op){
+            if(o.getAnswers() != null)
             overallNumber+=o.getAnswers().size();
         }
         int finalOverallNumber = overallNumber;
         op.forEach(answer->{
-            int temp=answer.getAnswers().size();
+            int temp;
+            if(answer.getAnswers() != null)
+            temp=answer.getAnswers().size();
+            else temp = 0;
+
             int percentage;
             if(finalOverallNumber==0){
                 percentage=0;
@@ -281,21 +285,14 @@ public class Message {
                         .build());
             blocks.add(
                     SectionBlock.builder().text(MarkdownTextObject.builder().text(PercentangeDisplay(temp,finalOverallNumber)+"  "+String.valueOf(percentage)+"% ("+String.valueOf(temp)+")").build()).build());
-           if(!propertyTrue("anonymous",properties)){
+           if(!propertyTrue("anonymous",properties) && answer.getAnswers() != null){
                 blocks.add(
                         SectionBlock.builder().text(PlainTextObject.builder().text(UserBuilder(answer.getAnswers())).build()).build());
 
             }
 
         });
-            if(propertyTrue("allowUsersToAddOptions",properties)){
-            blocks.add(
-                    SectionBlock.builder()
-                            .text(PlainTextObject.builder().text("something").build())
-                            .accessory(ButtonElement.builder().text(PlainTextObject.builder().text("AddOption").build()).value("option").build())
-                            .build()
-            );}
-        blocks.add(DividerBlock.builder().build());
+        List<BlockElement> blockElements = new ArrayList<>();
 
         if(triedToDelete)
         {
@@ -305,13 +302,16 @@ public class Message {
         }
         else
         {
-            blocks.add(
-                    SectionBlock.builder()
-                            .text(PlainTextObject.builder().text(" ").build())
-                            .accessory(ButtonElement.builder().text(PlainTextObject.builder().text("Delete Poll").build()).value("delete").style("danger").build()).build()
-            );
+                    blockElements.add(ButtonElement.builder().text(PlainTextObject.builder().text("Delete Poll").build()).actionId("delete").style("danger").build());
         }
 
+        blockElements.add(ButtonElement.builder().text(PlainTextObject.builder().text("Renew Poll").build()).actionId("renew").build());
+
+        if(propertyTrue("allowUsersToAddOptions",properties)){
+            blockElements.add(ButtonElement.builder().text(PlainTextObject.builder().text("Add choices").build()).actionId("choices").build());}
+        blocks.add(DividerBlock.builder().build());
+
+        blocks.add(ActionsBlock.builder().elements(blockElements).build());
 
         try {
             ChatUpdateResponse um = slack.methods(token).chatUpdate(req -> req.channel(currentPoll.getId().getChannelId()).ts(currentPoll.getId().getTimeStamp()).blocks(blocks));
@@ -366,14 +366,14 @@ public class Message {
         String channelId=pld.getContainer().getChannelId();
         String userId=pld.getUser().getId();
 
-        PollRepository poll=SpringContext.getBean(PollRepository.class);
-        Poll currentPoll=poll.getOne(new PollID(timestamp,channelId));
-        User owner = currentPoll.getOwner();
+        PollService pollService =SpringContext.getBean(PollService.class);
+        PollDto currentPoll= pollService.findPollByID(timestamp,channelId);
+        UserDto owner = currentPoll.getOwner();
 
-        UserRepository userRepository = SpringContext.getBean(UserRepository.class);
-        User currentUser = userRepository.getOne(userId);
+        UserService userService = SpringContext.getBean(UserService.class);
+        UserDto currentUser = userService.findUserByID(userId);
 
-        if(currentUser != owner)
+        if(currentUser.getId() != owner.getId())
         {
             UpdateMessage(timestamp,channelId,true);
         }
@@ -387,9 +387,93 @@ public class Message {
             } catch (IOException | SlackApiException e) {
                 e.printStackTrace();
             }
-            //poll.deleteById(currentPoll.getId());
+            pollService.deletePollById(currentPoll.getTimeStamp(),currentPoll.getChannelId());
         }
 
 
+    }
+
+    public void OnPolRenew(String payload) {
+        BlockActionPayload pld = GsonFactory.createSnakeCase().fromJson(payload, BlockActionPayload.class);
+        String timestamp=pld.getContainer().getMessageTs();
+        String channelId=pld.getContainer().getChannelId();
+        String userId=pld.getUser().getId();
+        Boolean noAnswers = true;
+
+        PollService pollService =SpringContext.getBean(PollService.class);
+        PollDto currentPoll= pollService.findPollByID(timestamp,channelId);
+
+        try {
+            slack.methods().chatDelete(
+                    ChatDeleteRequest.builder().token(token).channel(channelId).ts(timestamp).build()
+            );
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (SlackApiException e) {
+            e.printStackTrace();
+        }
+
+        OptionService optionService =SpringContext.getBean(OptionService.class);
+        List<OptionDto> optionDtos = optionService.findAllPollOptions(currentPoll.getTimeStamp(),currentPoll.getChannelId());
+
+        List<String> options = new ArrayList<>();
+        for(OptionDto optionDto : optionDtos) {
+            if (optionDto.getAnswers().size() > 0)
+                noAnswers = false;
+            options.add(optionDto.getOptionText());
+        }
+
+        CreatePollOptions pollProperties = new CreatePollOptions();
+        currentPoll.getProperties().forEach(propertiesDto -> {
+            switch (propertiesDto.getName()){
+                case "anonymous":
+                    pollProperties.anonymous = true;
+                    break;
+                case "multivote":
+                    pollProperties.multivote = true;
+                    break;
+                case "allowUsersToAddOptions":
+                    pollProperties.allowUsersToAddOptions= true;
+                    break;
+            }
+        });
+
+        ChatPostMessageResponse postResponse = null;
+        try {
+            postResponse = slack.methods(token).chatPostMessage(req -> req.channel(currentPoll.getChannelId()).blocks(ComposeMessage(currentPoll.getName(),options,pollProperties)));
+            currentPoll.setTimeStamp(postResponse.getTs());
+            pollService.insert(currentPoll);
+            optionDtos.forEach(option -> {
+                optionService.insert(new OptionDto(option.getAnswers(),new PollDto(currentPoll.getTimeStamp(),currentPoll.getChannelId()),option.getOptionText()));
+            });
+
+        } catch (SlackApiException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.out.println(postResponse);
+        }
+
+        pollService.deletePollById(timestamp,channelId);
+
+        if(!noAnswers)
+        UpdateMessage(currentPoll.getTimeStamp(),currentPoll.getChannelId(), false);
+
+    }
+
+    public void OnOptionCreation(String payload) {
+        ViewSubmissionPayload pld = GsonFactory.createSnakeCase().fromJson(payload, ViewSubmissionPayload.class);
+        View view = pld.getView();
+        ViewState state = pld.getView().getState();
+
+        List<Map<String, ViewState.Value>> stateValuesList = new LinkedList<>(state.getValues().values());
+        String newOption = stateValuesList.get(0).values().stream().findFirst().get().getValue();
+
+        String[] tsAndChannelId = view.getPrivateMetadata().split("&",2);
+
+        OptionService optionService =SpringContext.getBean(OptionService.class);
+
+        optionService.insert(new OptionDto(new PollDto(tsAndChannelId[0],tsAndChannelId[1]),newOption));
+        UpdateMessage(tsAndChannelId[0],tsAndChannelId[1],false);
     }
 }

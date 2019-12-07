@@ -85,7 +85,7 @@ public class PollService {
     }
 
     private PollDto savePoll(Poll poll){
-        pollRepository.saveAndFlush(poll);
+        pollRepository.save(poll);
         return findPollByID(poll.getId().getTimeStamp(),poll.getId().getChannelId());
     }
 }
