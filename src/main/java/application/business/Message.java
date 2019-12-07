@@ -110,10 +110,10 @@ public class Message {
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
-            System.out.println(postResponse);
         }
 
     }
+
     public void createPollTable(String channelId,String question,List<String> answers, String timeStamp,String userId,String userName, CreatePollOptions pollOptions){
         System.out.println(pollOptions.allowUsersToAddOptions+" "+pollOptions.anonymous+" "+pollOptions.multivote);
 
@@ -210,7 +210,7 @@ public class Message {
 
             }
 
-        UpdateMessage(timestamp,channelId,false);
+        UpdateMessage(timestamp,channelId);
 
     //    System.out.println(pld.getActions().get(0).getValue());
     }
@@ -241,7 +241,7 @@ public class Message {
         return false;
     }
 
-    public void UpdateMessage(String timestamp,String channelID, boolean triedToDelete){
+    public void UpdateMessage(String timestamp,String channelID){
         PollRepository poll=SpringContext.getBean(PollRepository.class);
         OptionRepository options=SpringContext.getBean(OptionRepository.class);
         Poll currentPoll=poll.getOne(new PollID(timestamp,channelID));
@@ -294,16 +294,9 @@ public class Message {
         });
         List<BlockElement> blockElements = new ArrayList<>();
 
-        if(triedToDelete)
-        {
-            blocks.add(
-                    SectionBlock.builder()
-                            .text(PlainTextObject.builder().text("You are not the owner of this poll").build()).build());
-        }
-        else
-        {
-                    blockElements.add(ButtonElement.builder().text(PlainTextObject.builder().text("Delete Poll").build()).actionId("delete").style("danger").build());
-        }
+
+        blockElements.add(ButtonElement.builder().text(PlainTextObject.builder().text("Delete Poll").build()).actionId("delete").style("danger").build());
+
 
         blockElements.add(ButtonElement.builder().text(PlainTextObject.builder().text("Renew Poll").build()).actionId("renew").build());
 
@@ -375,7 +368,7 @@ public class Message {
 
         if(currentUser.getId() != owner.getId())
         {
-            UpdateMessage(timestamp,channelId,true);
+            new SlackManager().handleMessageDeletionAction(payload,currentPoll.getOwner().getName());
         }
         else
         {
@@ -457,7 +450,7 @@ public class Message {
         pollService.deletePollById(timestamp,channelId);
 
         if(!noAnswers)
-        UpdateMessage(currentPoll.getTimeStamp(),currentPoll.getChannelId(), false);
+        UpdateMessage(currentPoll.getTimeStamp(),currentPoll.getChannelId());
 
     }
 
@@ -474,6 +467,6 @@ public class Message {
         OptionService optionService =SpringContext.getBean(OptionService.class);
 
         optionService.insert(new OptionDto(new PollDto(tsAndChannelId[0],tsAndChannelId[1]),newOption));
-        UpdateMessage(tsAndChannelId[0],tsAndChannelId[1],false);
+        UpdateMessage(tsAndChannelId[0],tsAndChannelId[1]);
     }
 }

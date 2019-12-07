@@ -251,11 +251,13 @@ public class SlackManager {
 
     public String handleViewSubmission(String jsonPayload) {
         ViewSubmissionPayload payload = GsonFactory.createSnakeCase().fromJson(jsonPayload, ViewSubmissionPayload.class);
+
         if(payload.getView().getTitle().getText().equals("Add poll option")){
             Message message = new Message(slack,token);
             message.OnOptionCreation(jsonPayload);
             return "";
         }
+
         String callback = payload.getView().getCallbackId();
         ViewState state = payload.getView().getState();
 
@@ -327,35 +329,63 @@ public class SlackManager {
 
     public void handleMessageBlockAction(String payload){
 
-            BlockActionPayload pld = GsonFactory.createSnakeCase().fromJson(payload, BlockActionPayload.class);
-            String triggerId = pld.getTriggerId();
+        BlockActionPayload pld = GsonFactory.createSnakeCase().fromJson(payload, BlockActionPayload.class);
+        String triggerId = pld.getTriggerId();
 
-            List<LayoutBlock> blocks = new LinkedList<>();
-            blocks.add(
-                    InputBlock.builder()
-                            .label(PlainTextObject.builder().text("New question option").build())
-                            .element(PlainTextInputElement.builder().placeholder(PlainTextObject.builder().text("New option").build()).build())
-                            .build()
-            );
+        List<LayoutBlock> blocks = new LinkedList<>();
+        blocks.add(
+                InputBlock.builder()
+                        .label(PlainTextObject.builder().text("New question option").build())
+                        .element(PlainTextInputElement.builder().placeholder(PlainTextObject.builder().text("New option").build()).build())
+                        .build()
+        );
 
-            View view = View.builder()
-                    .type("modal")
-                    .callbackId(CALLBACK_MODAL_ADD_OPTION)
-                    .title(ViewTitle.builder().type("plain_text").text("Add poll option").build())
-                    .submit(ViewSubmit.builder().type("plain_text").text("Submit").build())
-                    .close(ViewClose.builder().type("plain_text").text("Cancel").build())
-                    .notifyOnClose(false)
-                    .blocks(blocks)
-                    .privateMetadata(pld.getContainer().getMessageTs() + "&" + pld.getContainer().getChannelId())
-                    .build();
+        View view = View.builder()
+                .type("modal")
+                .callbackId(CALLBACK_MODAL_ADD_OPTION)
+                .title(ViewTitle.builder().type("plain_text").text("Add poll option").build())
+                .submit(ViewSubmit.builder().type("plain_text").text("Submit").build())
+                .close(ViewClose.builder().type("plain_text").text("Cancel").build())
+                .notifyOnClose(false)
+                .blocks(blocks)
+                .privateMetadata(pld.getContainer().getMessageTs() + "&" + pld.getContainer().getChannelId())
+                .build();
 
-            try {
-                slack.methods(token).viewsOpen(req -> req
-                        .view(view)
-                        .triggerId(triggerId));
-            } catch (IOException | SlackApiException e) {
-                e.printStackTrace();
-            }
+        try {
+            slack.methods(token).viewsOpen(req -> req
+                    .view(view)
+                    .triggerId(triggerId));
+        } catch (IOException | SlackApiException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void handleMessageDeletionAction(String payload, String owner){
+
+        BlockActionPayload pld = GsonFactory.createSnakeCase().fromJson(payload, BlockActionPayload.class);
+        String triggerId = pld.getTriggerId();
+
+        List<LayoutBlock> blocks = new LinkedList<>();
+        blocks.add(                    SectionBlock.builder()
+                .text(PlainTextObject.builder().text("Sorry, but you cannot delete this poll").build()).build());
+        blocks.add(SectionBlock.builder()
+                .text(PlainTextObject.builder().text("Only <@" + owner + "> can delete this poll").build()).build());
+        View view = View.builder()
+                .type("modal")
+                .callbackId(CALLBACK_MODAL_ADD_OPTION)
+                .title(ViewTitle.builder().type("plain_text").text("Sorry").build())
+                .close(ViewClose.builder().type("plain_text").text("Cancel").build())
+                .notifyOnClose(false)
+                .blocks(blocks)
+                .build();
+
+        try {
+            slack.methods(token).viewsOpen(req -> req
+                    .view(view)
+                    .triggerId(triggerId));
+        } catch (IOException | SlackApiException e) {
+            e.printStackTrace();
+        }
     }
 
 }
