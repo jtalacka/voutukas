@@ -95,9 +95,6 @@ public class Message {
 
         blocks.add(ActionsBlock.builder().elements(blockElements).build());
 
-
-
-
         return blocks;
     }
     public void PostInitialMessage(String channelId, String question, List<String> answers, String userId, String userName, CreatePollOptions pollOptions){
@@ -125,11 +122,11 @@ public class Message {
 
         Set<PropertiesDto> propertiesSet = new HashSet<>();
         if(pollOptions.multivote==true) {
-            propertiesSet.add(propertiesService.findPropertieByName("multivote"));
+            propertiesSet.add(new PropertiesDto(2));
         }if(pollOptions.anonymous==true) {
-            propertiesSet.add(propertiesService.findPropertieByName("anonymous"));
+            propertiesSet.add(new PropertiesDto(3));
         }if(pollOptions.allowUsersToAddOptions==true) {
-            propertiesSet.add(propertiesService.findPropertieByName("allowUsersToAddOptions"));
+            propertiesSet.add(new PropertiesDto(1));
         }
         PollDto poll=new PollDto(timeStamp,channelId,question, new UserDto(userId),propertiesSet);
         List<OptionDto>option=new LinkedList<>();

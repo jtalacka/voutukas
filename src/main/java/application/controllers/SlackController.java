@@ -12,6 +12,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 @RestController
@@ -29,7 +31,7 @@ public class SlackController {
     }
 
     @RequestMapping(value = "interact", method = RequestMethod.POST, consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
-    public String onInteraction(@RequestParam("payload") String jsonResponse){
+    public String onInteraction(@RequestParam("payload") String jsonResponse) throws ExecutionException, InterruptedException {
         //We check what type of response we got
         String type = GsonFactory.createSnakeCase().fromJson(jsonResponse, Map.class).get("type").toString();
 

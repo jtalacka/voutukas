@@ -22,6 +22,7 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 public class SlackManager {
 
@@ -250,6 +251,7 @@ public class SlackManager {
     }
 
     public String handleViewSubmission(String jsonPayload) {
+
         ViewSubmissionPayload payload = GsonFactory.createSnakeCase().fromJson(jsonPayload, ViewSubmissionPayload.class);
 
         if(payload.getView().getTitle().getText().equals("Add poll option")){
@@ -279,6 +281,7 @@ public class SlackManager {
 
         return "";
     }
+
 
     private InputBlock inputBlockBuilder(String label, String actionId, String placeholder) {
         return InputBlock.builder()
