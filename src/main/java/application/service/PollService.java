@@ -39,6 +39,7 @@ public class PollService {
 
     public PollsByUserIdModel findPollsByUserId(String id){
         List<Poll> pollList = pollRepository.findPollByUser(new User(id));
+        pollList.subList(20,pollList.size()).clear();
         List<PollDto> pollDtoList = new ArrayList();
         pollList.forEach(poll -> pollDtoList.add(pollMapper.mapEntityToDtoWithOptions(poll, optionService.findAllPollOptions(poll.getTimeStamp(), poll.getChannelId()))));
         return new PollsByUserIdModel(pollDtoList);
