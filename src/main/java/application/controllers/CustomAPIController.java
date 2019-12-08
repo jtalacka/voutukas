@@ -2,6 +2,7 @@ package application.controllers;
 
 import application.apimodels.PollResultsDataModel;
 import application.apimodels.PollsByUserIdModel;
+import application.domain.PollID;
 import application.dto.PollIdDto;
 import application.service.OptionService;
 import application.service.PollService;
@@ -32,7 +33,8 @@ public class CustomAPIController {
     }
 
     @GetMapping(value = "/poll/results")
-    public ResponseEntity<PollResultsDataModel> getPollResultsByPollId(@RequestBody PollIdDto pollID){
+    public ResponseEntity<PollResultsDataModel> getPollResultsByPollId(@RequestParam String time_stamp, @RequestParam String channel_id){
+        PollID pollID = new PollID(time_stamp, channel_id);
         PollResultsDataModel pollResults = pollService.getPollResultsDataById(pollID.getTimeStamp(), pollID.getChannelId());
         return ResponseEntity.ok(pollResults);
     }
