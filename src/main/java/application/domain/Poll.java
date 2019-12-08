@@ -12,13 +12,24 @@ import java.util.Set;
 @AllArgsConstructor
 @Builder
 @Entity
-@Table(name = "poll")
+@Table(name = "poll", uniqueConstraints=
+@UniqueConstraint(columnNames={"channel_id","time_stamp"}))
 public class Poll {
 
-    @EmbeddedId
-    private PollID id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    private int id;
 
-    @ManyToMany(fetch = FetchType.LAZY)
+    @Column(name = "initial_time_stamp")
+    private String InitialTimeStamp;
+
+    @Column(name = "time_stamp")
+    private String timeStamp;
+
+    @Column(name = "channel_id")
+    private String channelId;
+
+    @ManyToMany(fetch = FetchType.EAGER)
     @EqualsAndHashCode.Exclude
     @ToString.Exclude
     private Set<Properties> Properties = new HashSet<>();
@@ -27,16 +38,32 @@ public class Poll {
     @Size(max = 3000)
     private String name;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     private User owner;
 
-    public Poll(PollID pollId){
-        this.id=pollId;
+    public Poll(int id) {
+        this.id = id;
     }
 
-    public Poll(PollID id, String name, User ownerId) {
-        this.id = id;
+    public Poll(String timeStamp, String channelID, @Size(max = 3000) String name) {
+        this.InitialTimeStamp = timeStamp;
+        this.timeStamp = timeStamp;
+        this.channelId = channelID;
         this.name = name;
-        this.owner = ownerId;
+    }
+
+    public Poll(String timeStamp, String channelID, User owner) {
+        this.InitialTimeStamp = timeStamp;
+        this.timeStamp = timeStamp;
+        this.channelId = channelID;
+        this.owner = owner;
+    }
+
+    public Poll(String timeStamp, String channelID, @Size(max = 3000) String name, User owner) {
+        this.InitialTimeStamp = timeStamp;
+        this.timeStamp = timeStamp;
+        this.channelId= channelID;
+        this.name = name;
+        this.owner = owner;
     }
 }

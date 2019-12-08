@@ -2,11 +2,9 @@ package application.service;
 
 import application.Repositories.PollRepository;
 import application.domain.Poll;
-import application.domain.PollID;
 import application.domain.User;
 import application.dto.OptionDto;
 import application.dto.PollDto;
-import application.dto.PropertiesDto;
 import application.mapper.PollMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,8 +26,12 @@ public class PollService {
         this.optionService = optionService;
     }
 
-    public PollDto findPollByID(String timeStamp, String channleId){
-        return pollMapper.map(pollRepository.getOne(new PollID(timeStamp,channleId)));
+    public int getPollId(String timeStamp, String channelId){
+        return pollRepository.getId(timeStamp,channelId);
+    }
+
+    public PollDto findPollByTimeStampAnChannelID(String timeStamp, String channleId){
+        return pollMapper.map(pollRepository.findByChannelIdAndTimeStampOrderByIdAsc(channleId,timeStamp));
     }
 
     public List<PollDto> findPollsByUserId(String id){
@@ -37,7 +39,7 @@ public class PollService {
     }
 
     public List<PollDto> findPollsByChannelID(String channelId){
-        return convertToDtoList(pollRepository.findByIdChannelId(channelId));
+        return convertToDtoList(pollRepository.findByChannelIdOrderByIdAsc(channelId));
     }
 
     public List<PollDto> findAllPolls(){
@@ -55,13 +57,13 @@ public class PollService {
     @Transactional
     public void deletePollById(String timeStamp, String channelID){
         optionService.deleteOptionsByPollID(timeStamp,channelID);
-        pollRepository.deleteById(new PollID(timeStamp,channelID));
+        pollRepository.deleteByChannelIdAndTimeStamp(channelID,timeStamp);
     }
 
     @Transactional
     public void deleteAllUsersPolls(String id){
         pollRepository.selectAllPollsByUser(new User(id)).forEach(poll -> {
-            deletePollById(poll.getId().getTimeStamp(),poll.getId().getChannelId());
+            deletePollById(poll.getTimeStamp(),poll.getChannelId());
         });
     }
 
@@ -79,13 +81,14 @@ public class PollService {
         });
         return tempPollDto;
     }
+
     @Transactional
     public PollDto update(PollDto pollDto){
         return savePoll(pollMapper.map(pollDto));
     }
 
     private PollDto savePoll(Poll poll){
-        pollRepository.save(poll);
-        return findPollByID(poll.getId().getTimeStamp(),poll.getId().getChannelId());
+        pollRepository.saveAndFlush(poll);
+        return findPollByTimeStampAnChannelID(poll.getTimeStamp(),poll.getChannelId());
     }
 }

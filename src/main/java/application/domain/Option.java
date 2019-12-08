@@ -12,15 +12,16 @@ import java.util.Set;
 @AllArgsConstructor
 @Builder
 @Entity
-@Table(name = "optiontable")
+@Table(name = "optiontable", uniqueConstraints=
+@UniqueConstraint(columnNames={"poll_id", "option_text"}))
 public class Option {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private int id;
 
 
-    @ManyToMany(fetch = FetchType.LAZY)
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "answers",
             joinColumns = { @JoinColumn(name = "option_id") },
             inverseJoinColumns = { @JoinColumn(name = "user_id") })
@@ -31,10 +32,6 @@ public class Option {
 
 
     @ManyToOne(fetch=FetchType.EAGER)
-    @JoinColumns({
-            @JoinColumn(name = "poll_id_channel_id"),
-            @JoinColumn(name = "poll_id_time_stamp")
-    })
     private Poll poll;
 
     @Column(name = "option_text", length = 3000)

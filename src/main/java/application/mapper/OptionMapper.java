@@ -11,16 +11,20 @@ public class OptionMapper {
     ModelMapper modelMapper = new ModelMapper();
 
     public Option map(OptionDto optionDto){
-        Option option = modelMapper.map(optionDto, Option.class);
-        option.getPoll().getId().setTimeStamp(optionDto.getPoll().getTimeStamp());
-        option.getPoll().getId().setChannelId(optionDto.getPoll().getChannelId());
-        return option;
+        Option option;
+        if (optionDto != null) {
+            option = modelMapper.map(optionDto, Option.class);
+            return option;
+        }
+        return null;
     }
 
     public OptionDto map(Option option){
-        OptionDto optionDto = modelMapper.map(option, OptionDto.class);
-        optionDto.getPoll().setTimeStamp(option.getPoll().getId().getTimeStamp());
-        optionDto.getPoll().setChannelId(option.getPoll().getId().getChannelId());
-        return optionDto;
+        OptionDto optionDto;
+        if(option != null) {
+            optionDto = modelMapper.map(option, OptionDto.class);
+            return optionDto;
+        }
+        return null;
     }
 }

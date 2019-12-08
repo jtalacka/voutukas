@@ -277,7 +277,7 @@ public class SlackManager {
         CreatePollOptions pollOptions = GsonFactory.createSnakeCase().fromJson(payload.getView().getPrivateMetadata(), CreatePollOptions.class);
         //Display Initial Message
         Message message = new Message(slack,token);
-        message.PostInitialMessage(channelId,inputQuestion,questionOptions,payload.getUser().getId(),payload.getUser().getUsername(),pollOptions);
+        message.PostInitialMessage(channelId,inputQuestion,questionOptions,payload.getUser().getId(),payload.getUser().getUsername(),payload.getUser().getName(),pollOptions);
 
         return "";
     }

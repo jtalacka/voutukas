@@ -12,16 +12,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 @Controller
 public class UIController {
 
-    @Autowired
-    UserService userService;
-
-    @Autowired
-    PollService pollService;
 
     @GetMapping("/")
     public String homePage(Model model) {
-
-        pollService.findAllPolls();
 
         model.addAttribute("message", "There's nothing to see here");
 

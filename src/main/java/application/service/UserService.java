@@ -49,7 +49,7 @@ public class UserService {
     }
 
     private UserDto saveUser(User user){
-        userRepository.save(user);
+        userRepository.saveAndFlush(user);
         return findUserByID(user.getId());
     }
 }

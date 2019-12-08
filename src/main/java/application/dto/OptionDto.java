@@ -1,11 +1,7 @@
 package application.dto;
 
-import application.domain.Poll;
-import application.domain.PollID;
-import application.domain.User;
 import lombok.*;
 
-import java.util.HashSet;
 import java.util.Set;
 
 @Data

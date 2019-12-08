@@ -3,6 +3,7 @@ package application.dto;
 import application.domain.Poll;
 import lombok.*;
 
+import javax.persistence.Column;
 import java.util.Set;
 
 
@@ -21,8 +22,10 @@ public class UserDto {
 //    @EqualsAndHashCode.Exclude
 //    @ToString.Exclude
 //    private Set<Poll> polls;
-    
-    private String name;
+
+    private String slackName;
+
+    private String fullName;
 
     public UserDto(String id) {
         this.id = id;

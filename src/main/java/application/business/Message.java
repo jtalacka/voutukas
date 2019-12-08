@@ -1,14 +1,7 @@
 package application.business;
 
 import application.Repositories.OptionRepository;
-import application.Repositories.PollRepository;
-import application.Repositories.PropertiesRepository;
-import application.Repositories.UserRepository;
 import application.domain.Option;
-import application.domain.Poll;
-import application.domain.PollID;
-import application.domain.Properties;
-import application.domain.User;
 import application.dto.OptionDto;
 import application.dto.PollDto;
 import application.dto.PropertiesDto;
@@ -21,13 +14,11 @@ import application.service.UserService;
 import com.github.seratch.jslack.Slack;
 import com.github.seratch.jslack.api.methods.SlackApiException;
 import com.github.seratch.jslack.api.methods.request.chat.ChatDeleteRequest;
-import com.github.seratch.jslack.api.methods.response.chat.ChatDeleteResponse;
 import com.github.seratch.jslack.api.methods.response.chat.ChatPostMessageResponse;
 import com.github.seratch.jslack.api.methods.response.chat.ChatUpdateResponse;
 import com.github.seratch.jslack.api.model.block.*;
 import com.github.seratch.jslack.api.model.block.composition.MarkdownTextObject;
 import com.github.seratch.jslack.api.model.block.composition.PlainTextObject;
-import com.github.seratch.jslack.api.model.block.composition.TextObject;
 import com.github.seratch.jslack.api.model.block.element.BlockElement;
 import com.github.seratch.jslack.api.model.block.element.ButtonElement;
 import com.github.seratch.jslack.api.model.view.View;
@@ -36,24 +27,18 @@ import com.github.seratch.jslack.app_backend.interactive_messages.payload.BlockA
 import com.github.seratch.jslack.app_backend.views.payload.ViewSubmissionPayload;
 import com.github.seratch.jslack.common.json.GsonFactory;
 
-import org.hibernate.boot.Metadata;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Configurable;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.stereotype.Component;
-
-import javax.swing.*;
-import javax.swing.text.StyledEditorKit;
-import java.io.Console;
 import java.io.IOException;
-import java.lang.reflect.Array;
-import java.lang.reflect.Type;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 public class Message {
     private String ChannelID;
     private Slack slack;
     private String token;
+    OptionService optionService =SpringContext.getBean(OptionService.class);
+    PollService pollService = SpringContext.getBean(PollService.class);
+    PropertiesService pR=SpringContext.getBean(PropertiesService.class);
+    UserService userService =SpringContext.getBean(UserService.class);
+
     public Message(Slack slack,String token) {
         this.slack=slack;
         this.token=token;
@@ -63,11 +48,16 @@ public class Message {
     public List<LayoutBlock> ComposeMessage(String question, List<String> answers, CreatePollOptions pollOptions){
         List<LayoutBlock> blocks=new ArrayList<>();
 
-        //temporary
-        OptionRepository optionRepository=SpringContext.getBean(OptionRepository.class);
 
         //AtomicInteger counter=new AtomicInteger(optionRepository.findAll().get(optionRepository.findAll().size()-1).getId()+1);// times out
-        AtomicInteger counter=new AtomicInteger(optionRepository.findFirstByOrderByIdDesc().getId()+1);// times out
+
+        OptionDto option = optionService.findLastOption();
+        AtomicInteger counter;
+        if(option != null)
+        counter = new AtomicInteger(option.getId()+2);
+        else {
+            counter = new AtomicInteger(0);
+        }
         //temp
            LayoutBlock Question = SectionBlock.builder()
                    .text(PlainTextObject.builder().text(question).build()).blockId("TEST")
@@ -94,14 +84,16 @@ public class Message {
             blockElements.add(ButtonElement.builder().text(PlainTextObject.builder().text("Add choices").build()).actionId("choices").build());}
 
         blocks.add(ActionsBlock.builder().elements(blockElements).build());
-
         return blocks;
     }
-    public void PostInitialMessage(String channelId, String question, List<String> answers, String userId, String userName, CreatePollOptions pollOptions){
+
+    public void PostInitialMessage(String channelId, String question, List<String> answers, String userId, String slackName, String fullName, CreatePollOptions pollOptions){
         ChatPostMessageResponse postResponse = null;
         try {
             postResponse = slack.methods(token).chatPostMessage(req -> req.channel(channelId).blocks(ComposeMessage(question,answers,pollOptions)));
-            createPollTable(channelId,question,answers,postResponse.getTs(),userId,userName,pollOptions);
+            System.out.println(postResponse.getTs());
+            userService.insert(new UserDto(userId,slackName,fullName));
+            createPollTable(channelId,question,answers,postResponse.getTs(), postResponse.getTs(),userId,slackName,pollOptions);
 
         } catch (SlackApiException e) {
             e.printStackTrace();
@@ -111,14 +103,8 @@ public class Message {
 
     }
 
-    public void createPollTable(String channelId,String question,List<String> answers, String timeStamp,String userId,String userName, CreatePollOptions pollOptions){
+    public void createPollTable(String channelId,String question,List<String> answers, String timeStamp, String intilialTimeStamp, String userId,String userName, CreatePollOptions pollOptions){
         System.out.println(pollOptions.allowUsersToAddOptions+" "+pollOptions.anonymous+" "+pollOptions.multivote);
-
-        PollService pollService=SpringContext.getBean(PollService.class);
-        OptionService optionService=SpringContext.getBean(OptionService.class);
-        PropertiesService pR=SpringContext.getBean(PropertiesService.class);
-
-        PropertiesService propertiesService=SpringContext.getBean(PropertiesService.class);
 
         Set<PropertiesDto> propertiesSet = new HashSet<>();
         if(pollOptions.multivote==true) {
@@ -128,12 +114,12 @@ public class Message {
         }if(pollOptions.allowUsersToAddOptions==true) {
             propertiesSet.add(new PropertiesDto(1));
         }
-        PollDto poll=new PollDto(timeStamp,channelId,question, new UserDto(userId),propertiesSet);
+        PollDto poll=new PollDto(timeStamp, intilialTimeStamp,channelId,propertiesSet,question, new UserDto(userId));
         List<OptionDto>option=new LinkedList<>();
         pollService.insert(poll);
 
         for(String a:answers){
-            optionService.insert(new OptionDto(poll,a));
+            optionService.insert(new OptionDto(new PollDto(pollService.getPollId(timeStamp,channelId)),a));
         }
      /*   User user=new User(userId,userName);
         userRepository.save(user);
@@ -164,42 +150,38 @@ public class Message {
     }
     public void OnUserVote(String payload){
         BlockActionPayload pld = GsonFactory.createSnakeCase().fromJson(payload, BlockActionPayload.class);
-        System.out.println(payload);
+
         String timestamp=pld.getContainer().getMessageTs();
         String channelId=pld.getContainer().getChannelId();
         String userId=pld.getUser().getId();
-        String username=pld.getUser().getUsername();
+        String slackName=pld.getUser().getUsername();
+        String fullName=pld.getUser().getName();
         String voteValue=pld.getActions().get(0).getValue();
-        PollRepository poll=SpringContext.getBean(PollRepository.class);
-        Poll currentPoll=poll.getOne(new PollID(timestamp,channelId));
-        Set<Properties> properties=currentPoll.getProperties();
-        System.out.println(voteValue);
 
-        OptionRepository optionRepository=SpringContext.getBean(OptionRepository.class);
-        PropertiesRepository propertiesRepository=SpringContext.getBean(PropertiesRepository.class);
-        UserRepository usr=SpringContext.getBean(UserRepository.class);
-       // Set<Properties> properties=
-        usr.save(new User(userId,username));
+        PollDto currentPoll = pollService.findPollByTimeStampAnChannelID(timestamp,channelId);
+        Set<PropertiesDto> properties = currentPoll.getProperties();
+
+        userService.insert(new UserDto(userId,slackName,fullName));
 
         try{
-            List<Option> options=optionRepository.findAllOptionsByPollID(new Poll(new PollID(timestamp,channelId)));
-            Boolean UserAlreadyVotedOnce=userContains(options,userId);
-            for (Option o : options){
+            List<OptionDto> optionsDtos = optionService.findAllPollOptions(timestamp,channelId);
+            Boolean UserAlreadyVotedOnce=userContains(optionsDtos,userId);
+            for (OptionDto o : optionsDtos){
 
                 if(o.getId()==Integer.parseInt(voteValue)){
-                    Set<User> answers =o.getAnswers();
-                    User u=SetContainsUser(answers,userId);
+                    Set<UserDto> answers = o.getAnswers();
+                    UserDto u = SetContainsUser(answers,userId);
                     if(u!=null){
                         //    if(!properties.contains(new Properties("multivote"))){
                         answers.remove(u);//}
                     }else {
                         if(!UserAlreadyVotedOnce||propertyTrue("multivote",properties)) {
-                            answers.add(usr.getOne(userId));
+                            answers.add(new UserDto(userId));
                         }
                     }
 
                     o.setAnswers(answers);
-                    optionRepository.save(o);
+                    optionService.update(o);
                     break;
                 }}
         }catch (Exception e){
@@ -211,26 +193,26 @@ public class Message {
 
     //    System.out.println(pld.getActions().get(0).getValue());
     }
-    private User SetContainsUser(Set<User> answers,String userID){
+    private UserDto SetContainsUser(Set<UserDto> answers,String userID){
 
-        for (User u : answers) {
+        for (UserDto u : answers) {
             if(u.getId().equals(userID)) {
             return u;
             }
             }
         return null;
     }
-    private Boolean userContains(List<Option> options, String userID){
-        for (Option o : options) {
-            for(User u: o.getAnswers())
+    private Boolean userContains(List<OptionDto> options, String userID){
+        for (OptionDto o : options) {
+            for(UserDto u: o.getAnswers())
             if(u.getId().equals(userID)) {
                 return true;
             }
         }
         return false;
     }
-    public Boolean propertyTrue(String property,Set<Properties> properties){
-        for(Properties p:properties){
+    public Boolean propertyTrue(String property,Set<PropertiesDto> properties){
+        for(PropertiesDto p:properties){
             if(p.getName().equals(property)) {
              return true;
             }
@@ -239,13 +221,12 @@ public class Message {
     }
 
     public void UpdateMessage(String timestamp,String channelID){
-        PollRepository poll=SpringContext.getBean(PollRepository.class);
-        OptionRepository options=SpringContext.getBean(OptionRepository.class);
-        Poll currentPoll=poll.getOne(new PollID(timestamp,channelID));
-        List<Option> op=options.findAllOptionsByPollID(new Poll(new PollID(timestamp,channelID)));
+        PollDto currentPoll= pollService.findPollByTimeStampAnChannelID(timestamp,channelID);
+
+        List<OptionDto> op= optionService.findAllPollOptions(timestamp,channelID);
 
         List<LayoutBlock> blocks=new ArrayList<>();
-        Set<Properties> properties=currentPoll.getProperties();
+        Set<PropertiesDto> properties = currentPoll.getProperties();
 
         //temporary
 
@@ -257,7 +238,7 @@ public class Message {
         blocks.add(Question);
         blocks.add(DividerBlock.builder().build());
         int overallNumber=0;
-        for(Option o:op){
+        for(OptionDto o:op){
             if(o.getAnswers() != null)
             overallNumber+=o.getAnswers().size();
         }
@@ -280,21 +261,20 @@ public class Message {
                         .text(PlainTextObject.builder().text(answer.getOptionText()).build())
                         .accessory(ButtonElement.builder().text(PlainTextObject.builder().text("vote").build()).value(String.valueOf(answer.getId())).build())
                         .build());
+            if(finalOverallNumber != 0)
             blocks.add(
                     SectionBlock.builder().text(MarkdownTextObject.builder().text(PercentangeDisplay(temp,finalOverallNumber)+"  "+String.valueOf(percentage)+"% ("+String.valueOf(temp)+")").build()).build());
-           if(!propertyTrue("anonymous",properties) && answer.getAnswers() != null){
+            if(!propertyTrue("anonymous",properties) && answer.getAnswers() != null){
                 blocks.add(
                         SectionBlock.builder().text(PlainTextObject.builder().text(UserBuilder(answer.getAnswers())).build()).build());
 
-            }
+             }
 
         });
         List<BlockElement> blockElements = new ArrayList<>();
 
 
         blockElements.add(ButtonElement.builder().text(PlainTextObject.builder().text("Delete Poll").build()).actionId("delete").style("danger").build());
-
-
         blockElements.add(ButtonElement.builder().text(PlainTextObject.builder().text("Renew Poll").build()).actionId("renew").build());
 
         if(propertyTrue("allowUsersToAddOptions",properties)){
@@ -304,7 +284,7 @@ public class Message {
         blocks.add(ActionsBlock.builder().elements(blockElements).build());
 
         try {
-            ChatUpdateResponse um = slack.methods(token).chatUpdate(req -> req.channel(currentPoll.getId().getChannelId()).ts(currentPoll.getId().getTimeStamp()).blocks(blocks));
+            ChatUpdateResponse um = slack.methods(token).chatUpdate(req -> req.channel(currentPoll.getChannelId()).ts(currentPoll.getTimeStamp()).blocks(blocks));
         } catch (IOException e) {
             e.printStackTrace();
         } catch (SlackApiException e) {
@@ -337,12 +317,12 @@ public class Message {
         return Symbols+"`";
 
     }
-    public String UserBuilder(Set<User>users){
+    public String UserBuilder(Set<UserDto>users){
      String user=" ";
 
-        for (User u : users) {
+        for (UserDto u : users) {
 
-            user +="<@"+u.getName()+">";
+            user +="<@"+u.getSlackName()+">";
         }
 
 
@@ -356,16 +336,14 @@ public class Message {
         String channelId=pld.getContainer().getChannelId();
         String userId=pld.getUser().getId();
 
-        PollService pollService =SpringContext.getBean(PollService.class);
-        PollDto currentPoll= pollService.findPollByID(timestamp,channelId);
+        PollDto currentPoll= pollService.findPollByTimeStampAnChannelID(timestamp,channelId);
         UserDto owner = currentPoll.getOwner();
 
-        UserService userService = SpringContext.getBean(UserService.class);
         UserDto currentUser = userService.findUserByID(userId);
 
         if(currentUser.getId() != owner.getId())
         {
-            new SlackManager().handleMessageDeletionAction(payload,currentPoll.getOwner().getName());
+            new SlackManager().handleMessageDeletionAction(payload,currentPoll.getOwner().getSlackName());
         }
         else
         {
@@ -390,8 +368,7 @@ public class Message {
         String userId=pld.getUser().getId();
         Boolean noAnswers = true;
 
-        PollService pollService =SpringContext.getBean(PollService.class);
-        PollDto currentPoll= pollService.findPollByID(timestamp,channelId);
+        PollDto currentPoll= pollService.findPollByTimeStampAnChannelID(timestamp,channelId);
 
         try {
             slack.methods().chatDelete(
@@ -403,7 +380,6 @@ public class Message {
             e.printStackTrace();
         }
 
-        OptionService optionService =SpringContext.getBean(OptionService.class);
         List<OptionDto> optionDtos = optionService.findAllPollOptions(currentPoll.getTimeStamp(),currentPoll.getChannelId());
 
         List<String> options = new ArrayList<>();
@@ -433,18 +409,12 @@ public class Message {
             postResponse = slack.methods(token).chatPostMessage(req -> req.channel(currentPoll.getChannelId()).blocks(ComposeMessage(currentPoll.getName(),options,pollProperties)));
             currentPoll.setTimeStamp(postResponse.getTs());
             pollService.insert(currentPoll);
-            optionDtos.forEach(option -> {
-                optionService.insert(new OptionDto(option.getAnswers(),new PollDto(currentPoll.getTimeStamp(),currentPoll.getChannelId()),option.getOptionText()));
-            });
-
         } catch (SlackApiException e) {
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
             System.out.println(postResponse);
         }
-
-        pollService.deletePollById(timestamp,channelId);
 
         if(!noAnswers)
         UpdateMessage(currentPoll.getTimeStamp(),currentPoll.getChannelId());
@@ -461,9 +431,8 @@ public class Message {
 
         String[] tsAndChannelId = view.getPrivateMetadata().split("&",2);
 
-        OptionService optionService =SpringContext.getBean(OptionService.class);
-
-        optionService.insert(new OptionDto(new PollDto(tsAndChannelId[0],tsAndChannelId[1]),newOption));
+        optionService.insert(new OptionDto(new PollDto(pollService.getPollId(tsAndChannelId[0],tsAndChannelId[1])),newOption));
         UpdateMessage(tsAndChannelId[0],tsAndChannelId[1]);
     }
+
 }
