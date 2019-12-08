@@ -2,6 +2,9 @@ package application.controllers;
 
 import application.apimodels.PollResultsDataModel;
 import application.apimodels.PollsByUserIdModel;
+import application.business.SlackManager;
+import application.dto.PollCreationDto;
+import application.dto.PollDto;
 import application.dto.PollIdDto;
 import application.service.OptionService;
 import application.service.PollService;
@@ -10,6 +13,8 @@ import com.github.seratch.jslack.Slack;
 import com.github.seratch.jslack.api.methods.SlackApiException;
 import com.github.seratch.jslack.api.methods.request.auth.AuthTestRequest;
 import com.github.seratch.jslack.api.methods.response.auth.AuthTestResponse;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -60,5 +65,18 @@ public class CustomAPIController {
             return ResponseEntity.badRequest().build();
         }
         return ResponseEntity.badRequest().build();
+    }
+
+    @PostMapping(
+            value = "/poll",
+            consumes = {
+                    MediaType.APPLICATION_JSON_VALUE,
+                    MediaType.APPLICATION_XML_VALUE })
+    public String createNewPoll(@RequestBody PollCreationDto newPoll){
+        SlackManager slackManager = new SlackManager();
+        slackManager.PostInitialMessage(newPoll.getChannelId(),newPoll.getQuestion(),newPoll.getOptions(),newPoll.getOwnerId(),newPoll.getOwnerName(),newPoll.getOwnerUserName(),newPoll.getProperties());
+
+
+        return "Poll created successfully";
     }
 }

@@ -9,8 +9,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 @RestController
@@ -49,6 +47,8 @@ public class SlackController {
 
         return "";
     }
+
+
 
     private List<String> ListOfInputText(String text)
     {
