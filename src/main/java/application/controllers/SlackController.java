@@ -16,8 +16,7 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("slack")
 public class SlackController {
-    private SlackManager slackManager;
-    private int yes = 0;
+    private final SlackManager slackManager;
 
     public SlackController(){
         slackManager = new SlackManager();
@@ -29,12 +28,10 @@ public class SlackController {
     }
 
     @RequestMapping(value = "interact", method = RequestMethod.POST, consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
-    public String onInteraction(@RequestParam("payload") String jsonResponse) throws ExecutionException, InterruptedException {
+    public String onInteraction(@RequestParam("payload") String jsonResponse){
         //We check what type of response we got
-        System.out.println(GsonFactory.createSnakeCase().fromJson(jsonResponse, Map.class));
         String type = GsonFactory.createSnakeCase().fromJson(jsonResponse, Map.class).get("type").toString();
-        yes ++;
-        System.out.println(yes);
+
         //Appropriate response depending on the type of action
         switch(type){
             case SlackManager.ACTION_BLOCK_ACTION:

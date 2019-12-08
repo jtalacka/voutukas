@@ -1,6 +1,8 @@
 package application.business;
 
 import application.Repositories.OptionRepository;
+import application.Repositories.PollRepository;
+import application.Repositories.UserRepository;
 import application.domain.Option;
 import application.dto.OptionDto;
 import application.dto.PollDto;
@@ -30,10 +32,10 @@ import com.github.seratch.jslack.common.json.GsonFactory;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
-public class Message {
+class Message {
     private String ChannelID;
-    private Slack slack;
-    private String token;
+    private final Slack slack;
+    private final String token;
     OptionService optionService =SpringContext.getBean(OptionService.class);
     PollService pollService = SpringContext.getBean(PollService.class);
     PropertiesService pR=SpringContext.getBean(PropertiesService.class);
@@ -45,7 +47,8 @@ public class Message {
 
 
     }
-    public List<LayoutBlock> ComposeMessage(String question, List<String> answers, CreatePollOptions pollOptions){
+
+    private List<LayoutBlock> ComposeMessage(String question, List<String> answers, CreatePollOptions pollOptions){
         List<LayoutBlock> blocks=new ArrayList<>();
 
 
@@ -91,20 +94,16 @@ public class Message {
         ChatPostMessageResponse postResponse = null;
         try {
             postResponse = slack.methods(token).chatPostMessage(req -> req.channel(channelId).blocks(ComposeMessage(question,answers,pollOptions)));
-            System.out.println(postResponse.getTs());
             userService.insert(new UserDto(userId,slackName,fullName));
             createPollTable(channelId,question,answers,postResponse.getTs(), postResponse.getTs(),userId,slackName,pollOptions);
 
-        } catch (SlackApiException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
+        } catch (SlackApiException | IOException e) {
             e.printStackTrace();
         }
 
     }
 
     public void createPollTable(String channelId,String question,List<String> answers, String timeStamp, String intilialTimeStamp, String userId,String userName, CreatePollOptions pollOptions){
-        System.out.println(pollOptions.allowUsersToAddOptions+" "+pollOptions.anonymous+" "+pollOptions.multivote);
 
         Set<PropertiesDto> propertiesSet = new HashSet<>();
         if(pollOptions.multivote==true) {
@@ -121,36 +120,10 @@ public class Message {
         for(String a:answers){
             optionService.insert(new OptionDto(new PollDto(pollService.getPollId(timeStamp,channelId)),a));
         }
-     /*   User user=new User(userId,userName);
-        userRepository.save(user);
-        PollID pollId=new PollID(timeStamp,channelId);
-        Poll tempPoll=new Poll(pollId, question,user);
-        Set<Properties>p=PropertySet(pollOptions);
-        tempPoll.setProperties(p);
-        for (Properties u : p) {
-            pR.save(u);
-        }*/
-        //pollRepository.save(tempPoll);
-
-
-
-
     }
 
-    private String PropertyType(CreatePollOptions pollOptions){
-        if(pollOptions.multivote==true) {
-            return "multivoce";
-        }if(pollOptions.anonymous==true) {
-            return "anonymous";
-        }if(pollOptions.allowUsersToAddOptions==true) {
-            return"allowUsersToAddOptions";
-        }
-
-        return null;
-    }
     public void OnUserVote(String payload){
         BlockActionPayload pld = GsonFactory.createSnakeCase().fromJson(payload, BlockActionPayload.class);
-
         String timestamp=pld.getContainer().getMessageTs();
         String channelId=pld.getContainer().getChannelId();
         String userId=pld.getUser().getId();
@@ -184,7 +157,7 @@ public class Message {
                     optionService.update(o);
                     break;
                 }}
-        }catch (Exception e){
+        ;}catch (Exception ignored){
 
 
             }
@@ -202,6 +175,7 @@ public class Message {
             }
         return null;
     }
+
     private Boolean userContains(List<OptionDto> options, String userID){
         for (OptionDto o : options) {
             for(UserDto u: o.getAnswers())

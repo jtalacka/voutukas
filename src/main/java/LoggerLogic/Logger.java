@@ -7,14 +7,13 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class Logger {
-    private static String LOG_PATH = System.getProperty("user.dir") + "\\Logs";
-    private static String LOG_EVENTS_FILENAME = "EventLogs.txt";
+    private static final String LOG_PATH = System.getProperty("user.dir") + "\\Logs";
+    private static final String LOG_EVENTS_FILENAME = "EventLogs.txt";
     private static String LOG_PAYLOADS_FILEMAME = "PayloadLogs.txt";
 
     private static FileWriter eventsLogger;
-    private static FileWriter payloadLogger;
-    private static SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-    private static File eventLogs = new File(LOG_PATH + "\\" + LOG_EVENTS_FILENAME);
+    private static final SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    private static final File eventLogs = new File(LOG_PATH + "\\" + LOG_EVENTS_FILENAME);
     private static File payloadLogs;
 
     public Logger() throws IOException {
@@ -62,7 +61,7 @@ public class Logger {
 
     private static void LogPayloads(String payload) {
         try {
-            payloadLogger = new FileWriter(payloadLogs);
+            FileWriter payloadLogger = new FileWriter(payloadLogs);
             payloadLogger.write(payload.replace(",",",\n"));
             payloadLogger.close();
         } catch (IOException e) {

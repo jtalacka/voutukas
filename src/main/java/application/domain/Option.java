@@ -20,13 +20,12 @@ public class Option {
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private int id;
 
-
+    @EqualsAndHashCode.Exclude
+    @ToString.Exclude
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "answers",
             joinColumns = { @JoinColumn(name = "option_id") },
             inverseJoinColumns = { @JoinColumn(name = "user_id") })
-    @EqualsAndHashCode.Exclude
-    @ToString.Exclude
     private Set<User> answers = new HashSet<>();
 
 

@@ -16,11 +16,6 @@ public class User {
     @Id
     private String id;
 
-//    @ManyToMany(mappedBy = "answers")
-//    @EqualsAndHashCode.Exclude
-//    @ToString.Exclude
-//    private Set<Option> answers;
-
     @Column(name = "slack_name")
     private String slackName;
 

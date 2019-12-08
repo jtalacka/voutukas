@@ -1,6 +1,8 @@
 package application.dto;
 
 import application.domain.Poll;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
 import javax.persistence.Column;
@@ -12,16 +14,8 @@ import java.util.Set;
 @AllArgsConstructor
 @Builder
 public class UserDto {
-
+    @JsonProperty("user_id")
     private String id;
-
-//    @EqualsAndHashCode.Exclude
-//    @ToString.Exclude
-//    private Set<OptionDto> answers;
-
-//    @EqualsAndHashCode.Exclude
-//    @ToString.Exclude
-//    private Set<Poll> polls;
 
     private String slackName;
 

@@ -40,9 +40,7 @@ public class OptionService {
 
     private List<OptionDto> convertToDtoList(List<Option> optionList){
         List<OptionDto> optionDtoList = new ArrayList<>();
-        optionList.forEach(option -> {
-            optionDtoList.add(optionMapper.map(option));
-        });
+        optionList.forEach(option -> optionDtoList.add(optionMapper.map(option)));
         return optionDtoList;
     }
 

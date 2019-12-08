@@ -13,12 +13,11 @@ import java.util.List;
 @Service
 public class UserService {
 
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
     private UserMapper userMapper = new UserMapper();
 
     public UserService(UserRepository userRepository) {
         this.userRepository = userRepository;
-        this.userMapper = userMapper;
     }
 
     public UserDto findUserByID(String id){
@@ -27,9 +26,7 @@ public class UserService {
 
     public List<UserDto> findAllUser(){
         List<UserDto> userDtoList = new ArrayList<>();
-        userRepository.findAll().forEach(user -> {
-            userDtoList.add(userMapper.map(user));
-        });
+        userRepository.findAll().forEach(user -> userDtoList.add(userMapper.map(user)));
         return userDtoList;
     }
 
