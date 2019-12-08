@@ -1,7 +1,9 @@
 package application.dto;
 
+import application.domain.Option;
 import lombok.*;
 
+import java.util.List;
 import java.util.Set;
 
 @Data
@@ -10,24 +12,20 @@ import java.util.Set;
 @Builder
 public class PollCreationDto {
 
-    private int id;
-
-    private String initialTimeStamp;
-
-    private String timeStamp;
-
     private String channelId;
 
     @EqualsAndHashCode.Exclude
     @ToString.Exclude
-    private Set<PropertiesDto> Properties;
+    private List<String> properties;
 
-//    @EqualsAndHashCode.Exclude
-//    @ToString.Exclude
-//    private Set<Option> options;
+    private List<String> options;
 
-    private String name;
+    private String question;
 
-    private UserDto owner;
+    private String ownerId;
+
+    private String ownerName;
+
+    private String ownerUserName;
 
 }

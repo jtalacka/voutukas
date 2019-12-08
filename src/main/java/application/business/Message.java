@@ -32,7 +32,8 @@ import com.github.seratch.jslack.common.json.GsonFactory;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
-class Message {
+
+    class Message {
     private String ChannelID;
     private final Slack slack;
     private final String token;

@@ -387,4 +387,23 @@ public class SlackManager {
         }
     }
 
+    public void PostInitialMessage(String channelId, String question, List<String> answers, String userId, String slackName, String fullName, List<String> pollOptions){
+        CreatePollOptions createPollOptions = new CreatePollOptions();
+        pollOptions.forEach(pollOption -> {
+            switch (pollOption){
+                case "anonymous":
+                    createPollOptions.anonymous = true;
+                    break;
+                case "multivote":
+                    createPollOptions.multivote = true;
+                    break;
+                case "allowUsersToAddOptions":
+                    createPollOptions.allowUsersToAddOptions= true;
+                    break;
+            }
+        });
+        Message message = new Message(slack,token);
+        message.PostInitialMessage(channelId,question,answers,userId,slackName ,fullName, createPollOptions);
+    }
+
 }
