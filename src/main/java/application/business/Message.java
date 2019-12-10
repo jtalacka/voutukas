@@ -16,6 +16,7 @@ import application.service.UserService;
 import com.github.seratch.jslack.Slack;
 import com.github.seratch.jslack.api.methods.SlackApiException;
 import com.github.seratch.jslack.api.methods.request.chat.ChatDeleteRequest;
+import com.github.seratch.jslack.api.methods.request.users.UsersInfoRequest;
 import com.github.seratch.jslack.api.methods.response.chat.ChatPostMessageResponse;
 import com.github.seratch.jslack.api.methods.response.chat.ChatUpdateResponse;
 import com.github.seratch.jslack.api.model.block.*;
@@ -129,13 +130,23 @@ import java.util.concurrent.atomic.AtomicInteger;
         String channelId=pld.getContainer().getChannelId();
         String userId=pld.getUser().getId();
         String slackName=pld.getUser().getUsername();
+
+        String realName;
+        try{
+            realName = slack.methods(token).usersInfo(UsersInfoRequest.builder().user(pld.getUser().getId()).build()).getUser().getRealName();
+        }catch (Exception e){
+            System.out.println(e);
+            realName = pld.getUser().getName();
+        }
+
         String fullName=pld.getUser().getName();
         String voteValue=pld.getActions().get(0).getValue();
 
         PollDto currentPoll = pollService.findPollByTimeStampAnChannelID(timestamp,channelId);
         Set<PropertiesDto> properties = currentPoll.getProperties();
 
-        userService.insert(new UserDto(userId,slackName,fullName));
+        userService.insert(new UserDto(userId,slackName,realName));
+
 
         try{
             List<OptionDto> optionsDtos = optionService.findAllPollOptions(timestamp,channelId);

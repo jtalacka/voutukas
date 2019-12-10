@@ -3,6 +3,8 @@ package application.business;
 import application.models.CreatePollOptions;
 import com.github.seratch.jslack.Slack;
 import com.github.seratch.jslack.api.methods.SlackApiException;
+import com.github.seratch.jslack.api.methods.request.users.UsersIdentityRequest;
+import com.github.seratch.jslack.api.methods.request.users.UsersInfoRequest;
 import com.github.seratch.jslack.api.model.block.*;
 import com.github.seratch.jslack.api.model.block.composition.MarkdownTextObject;
 import com.github.seratch.jslack.api.model.block.composition.OptionObject;
@@ -273,7 +275,17 @@ public class SlackManager {
         CreatePollOptions pollOptions = GsonFactory.createSnakeCase().fromJson(payload.getView().getPrivateMetadata(), CreatePollOptions.class);
         //Display Initial Message
         Message message = new Message(slack,token);
-        message.PostInitialMessage(channelId,inputQuestion,questionOptions,payload.getUser().getId(),payload.getUser().getUsername(), payload.getUser().getName(), pollOptions);
+
+        //Get Real name
+        String realName;
+        try{
+            realName = slack.methods(token).usersInfo(UsersInfoRequest.builder().user(payload.getUser().getId()).build()).getUser().getRealName();
+        }catch (Exception e){
+            System.out.println(e);
+            realName = payload.getUser().getName();
+        }
+
+        message.PostInitialMessage(channelId,inputQuestion,questionOptions,payload.getUser().getId(),payload.getUser().getUsername(), realName, pollOptions);
         return "";
     }
 
