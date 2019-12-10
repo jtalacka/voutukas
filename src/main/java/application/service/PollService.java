@@ -41,12 +41,26 @@ public class PollService {
 
     public PollsByUserIdModel findPollsByUserId(String id){
         List<Poll> pollList = pollRepository.findPollByUser(new User(id));
-        //pollList.subList(20,pollList.size()).clear();
+
         List<PollDto> pollDtoList = new ArrayList();
         for(int i = min(20, pollList.size()-1); i >= 0; i--){
             Poll poll = pollList.get(i);
-            pollDtoList.add(pollMapper.mapEntityToDtoWithOptions(poll, optionService.findAllPollOptions(poll.getTimeStamp(), poll.getChannelId())));
+
+            //pollDtoList.add(pollMapper.mapEntityToDtoWithOptions(poll, optionService.findAllPollOptions(poll.getTimeStamp(), poll.getChannelId())));
+
+            int totalVotes = 0;
+
+            List<OptionDto> options = optionService.findAllPollOptions(poll.getTimeStamp(), poll.getChannelId());
+            for(OptionDto option : options){
+                totalVotes += option.getAnswers().size();
+            }
+
+            PollDto pollDto = pollMapper.mapEntityToDtoWithOptions(poll, optionService.findAllPollOptions(poll.getTimeStamp(), poll.getChannelId()));
+            pollDto.setVoteCount(totalVotes);
+
+            pollDtoList.add(pollDto);
         }
+
         //pollList.forEach(poll -> pollDtoList.add(pollMapper.mapEntityToDtoWithOptions(poll, optionService.findAllPollOptions(poll.getTimeStamp(), poll.getChannelId()))));
         return new PollsByUserIdModel(pollDtoList);
     }

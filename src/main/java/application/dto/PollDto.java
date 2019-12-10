@@ -33,7 +33,14 @@ public class PollDto {
     @JsonProperty("poll_question")
     private String name;
 
+    @JsonProperty("vote_count")
+    private int voteCount;
+
     private UserDto owner;
+
+    public void setVoteCount(int count){
+        voteCount = count;
+    }
 
     public PollDto(int id) {
         this.id = id;
