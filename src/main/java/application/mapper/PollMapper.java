@@ -24,7 +24,7 @@ public class PollMapper {
     }
     public  PollDto mapEntityToDtoWithOptions(Poll poll, List<OptionDto> optionDtoList){
         PollDto pollDto = modelMapper.map(poll, PollDto.class);
-               pollDto.setOptions(optionDtoList);
+        pollDto.setOptions(optionDtoList);
         return pollDto;
     }
 

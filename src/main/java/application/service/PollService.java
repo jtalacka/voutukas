@@ -16,6 +16,8 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
+import static java.lang.Math.min;
+
 @Service
 public class PollService {
 
@@ -41,7 +43,11 @@ public class PollService {
         List<Poll> pollList = pollRepository.findPollByUser(new User(id));
         //pollList.subList(20,pollList.size()).clear();
         List<PollDto> pollDtoList = new ArrayList();
-        pollList.forEach(poll -> pollDtoList.add(pollMapper.mapEntityToDtoWithOptions(poll, optionService.findAllPollOptions(poll.getTimeStamp(), poll.getChannelId()))));
+        for(int i = min(20, pollList.size()-1); i >= 0; i--){
+            Poll poll = pollList.get(i);
+            pollDtoList.add(pollMapper.mapEntityToDtoWithOptions(poll, optionService.findAllPollOptions(poll.getTimeStamp(), poll.getChannelId())));
+        }
+        //pollList.forEach(poll -> pollDtoList.add(pollMapper.mapEntityToDtoWithOptions(poll, optionService.findAllPollOptions(poll.getTimeStamp(), poll.getChannelId()))));
         return new PollsByUserIdModel(pollDtoList);
     }
 

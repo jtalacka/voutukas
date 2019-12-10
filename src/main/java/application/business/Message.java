@@ -15,6 +15,7 @@ import application.service.PropertiesService;
 import application.service.UserService;
 import com.github.seratch.jslack.Slack;
 import com.github.seratch.jslack.api.methods.SlackApiException;
+import com.github.seratch.jslack.api.methods.request.channels.ChannelsInfoRequest;
 import com.github.seratch.jslack.api.methods.request.chat.ChatDeleteRequest;
 import com.github.seratch.jslack.api.methods.request.users.UsersInfoRequest;
 import com.github.seratch.jslack.api.methods.response.chat.ChatPostMessageResponse;
@@ -105,7 +106,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
     }
 
-    public void createPollTable(String channelId,String question,List<String> answers, String timeStamp, String intilialTimeStamp, String userId,String userName, CreatePollOptions pollOptions){
+    public void createPollTable(String channelId, String question,List<String> answers, String timeStamp, String intilialTimeStamp, String userId,String userName, CreatePollOptions pollOptions){
 
         Set<PropertiesDto> propertiesSet = new HashSet<>();
         if(pollOptions.multivote==true) {
@@ -115,7 +116,7 @@ import java.util.concurrent.atomic.AtomicInteger;
         }if(pollOptions.allowUsersToAddOptions==true) {
             propertiesSet.add(new PropertiesDto(1));
         }
-        PollDto poll=new PollDto(timeStamp, intilialTimeStamp,channelId,propertiesSet,question, new UserDto(userId));
+        PollDto poll=new PollDto(timeStamp, intilialTimeStamp,channelId, propertiesSet,question, new UserDto(userId));
         List<OptionDto>option=new LinkedList<>();
         pollService.insert(poll);
 
