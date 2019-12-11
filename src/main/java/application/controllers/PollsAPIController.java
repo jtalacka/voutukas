@@ -41,12 +41,12 @@ public class PollsAPIController {
     }
 
     @DeleteMapping(value = "/delete")
-    @ResponseStatus(HttpStatus.OK)
-    public void deletePollById(@RequestParam String time_stamp, @RequestParam String channel_id)
+    public ResponseEntity deletePollById(@RequestParam String time_stamp, @RequestParam String channel_id)
     {
         pollService.deletePollById(time_stamp, channel_id);
+        return ResponseEntity.ok().build();
     }
-    
+
 
     @PutMapping(value = "/poll", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<PollDto> PutPoll(@RequestBody PollDto pollDto)
