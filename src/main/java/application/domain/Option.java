@@ -12,8 +12,7 @@ import java.util.Set;
 @AllArgsConstructor
 @Builder
 @Entity
-@Table(name = "optiontable", uniqueConstraints=
-@UniqueConstraint(columnNames={"poll_id", "option_text"}))
+@Table(name = "optiontable")
 public class Option {
 
     @Id

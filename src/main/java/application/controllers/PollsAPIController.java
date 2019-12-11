@@ -46,20 +46,7 @@ public class PollsAPIController {
     {
         pollService.deletePollById(time_stamp, channel_id);
     }
-
-//    @PostMapping(value = "/poll", consumes = MediaType.APPLICATION_JSON_VALUE)
-//    public ResponseEntity<PollDto> PostPoll(@RequestBody PollDto pollDto)
-//    {
-//        if(pollService.findPollByTimeStampAnChannelID(pollDto.getTimeStamp(),pollDto.getChannelId()) != null)
-//        {
-//            return ResponseEntity.badRequest().body(null);
-//        }
-//        else
-//        {
-//            pollService.insert(pollDto);
-//            return ResponseEntity.ok(pollDto);
-//        }
-//    }
+    
 
     @PutMapping(value = "/poll", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<PollDto> PutPoll(@RequestBody PollDto pollDto)
