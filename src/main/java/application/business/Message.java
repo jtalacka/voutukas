@@ -78,6 +78,8 @@ import java.util.concurrent.atomic.AtomicInteger;
                                .build()
                );
                counter.incrementAndGet();
+               blocks.add(
+                       SectionBlock.builder().text(MarkdownTextObject.builder().text(PercentangeDisplay(0,0)+"  "+ 0 +"% (" + 0 + ")").build()).build());
            });
         List<BlockElement> blockElements = new ArrayList<>();
 
