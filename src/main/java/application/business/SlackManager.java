@@ -58,35 +58,35 @@ public class SlackManager {
         token = System.getenv("SLACK_API_ACCESS_TOKEN");
     }
 
-    public void composeInitialModal(String triggerId, List<String> InlineInlineText,String channelId){
+    public void composeInitialModal(String triggerId, List<String> InlineText,String channelId){
         this.channelId=channelId;
         // Question area
         //Block Action ID's
         String ACTION_ID_QUESTION_INPUT = "question_action";
         LayoutBlock questionBlock = inputBlockBuilder("Question", ACTION_ID_QUESTION_INPUT, "Your question goes here", BLOCK_ID_QUESTION_INPUT);
 
-        if(InlineInlineText != null)
+        if(InlineText != null)
         {
-            ((InputBlock) questionBlock).setElement(PlainTextInputElement.builder().initialValue(InlineInlineText.get(0)).build());
+            ((InputBlock) questionBlock).setElement(PlainTextInputElement.builder().maxLength(75).initialValue(InlineText.get(0)).build());
         }
 
         List<LayoutBlock> blocks = new LinkedList<>();
         blocks.add(questionBlock);
 
         char identifier = 'A';
-        if(InlineInlineText != null && InlineInlineText.size() == 2)
+        if(InlineText != null && InlineText.size() == 2)
         {
             InputBlock temp = inputBlockBuilder("Option "+identifier, "option 0", "Option "+identifier);
-            temp.setElement(PlainTextInputElement.builder().initialValue(InlineInlineText.get(1)).build());
+            temp.setElement(PlainTextInputElement.builder().initialValue(InlineText.get(1)).build());
             blocks.add(temp);
             blocks.add(inputBlockBuilder("Option "+(char)(identifier+1), "option 1", "Option "+(char)(identifier+1)));
         }
-        else if(InlineInlineText != null && InlineInlineText.size() > 2)
+        else if(InlineText != null && InlineText.size() > 2)
         {
-            for(String question : InlineInlineText)
+            for(String question : InlineText)
             {
-                if(InlineInlineText.indexOf(question) == 0) continue;
-                InputBlock temp = inputBlockBuilder("Option "+identifier, "option "+ InlineInlineText.indexOf(question), "Option "+identifier);
+                if(InlineText.indexOf(question) == 0) continue;
+                InputBlock temp = inputBlockBuilder("Option "+identifier, "option "+ InlineText.indexOf(question), "Option "+identifier);
                 temp.setElement(PlainTextInputElement.builder().initialValue(question).build());
                 blocks.add(temp);
                 identifier++;
@@ -99,8 +99,6 @@ public class SlackManager {
                 identifier++;
             }
         }
-
-        //Add/remove option buttons
 
         LayoutBlock addOptionsSection = ActionsBlock.builder()
                 .blockId(BLOCK_ID_ADD_REMOVE_ACTION_BLOCK)
@@ -251,7 +249,6 @@ public class SlackManager {
     public String handleViewSubmission(String jsonPayload) {
 
         ViewSubmissionPayload payload = GsonFactory.createSnakeCase().fromJson(jsonPayload, ViewSubmissionPayload.class);
-
         if(payload.getView().getTitle().getText().equals("Add poll option")){
             Message message = new Message(slack,token);
             message.OnOptionCreation(jsonPayload);
@@ -289,13 +286,13 @@ public class SlackManager {
         return "";
     }
 
-
     private InputBlock inputBlockBuilder(String label, String actionId, String placeholder) {
         return InputBlock.builder()
                         .label(PlainTextObject.builder().text(label).build())
                         .element(PlainTextInputElement.builder()
                                 .placeholder(PlainTextObject.builder().text(placeholder).build())
                                 .actionId(actionId)
+                                .maxLength(75)
                                 .build())
                         .build();
     }
@@ -306,6 +303,7 @@ public class SlackManager {
                 .element(PlainTextInputElement.builder()
                         .placeholder(PlainTextObject.builder().text(placeholder).build())
                         .actionId(actionId)
+                        .maxLength(75)
                         .build())
                 .blockId(block_id)
                 .build();

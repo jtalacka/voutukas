@@ -138,7 +138,7 @@ import java.util.concurrent.atomic.AtomicInteger;
         try{
             realName = slack.methods(token).usersInfo(UsersInfoRequest.builder().user(pld.getUser().getId()).build()).getUser().getRealName();
         }catch (Exception e){
-            System.out.println(e);
+            System.out.println(e); //looks a bit crazy but works
             realName = pld.getUser().getName();
         }
 
