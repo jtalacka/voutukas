@@ -19,6 +19,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api")
@@ -72,11 +73,25 @@ public class CustomAPIController {
             consumes = {
                     MediaType.APPLICATION_JSON_VALUE,
                     MediaType.APPLICATION_XML_VALUE })
-    public String createNewPoll(@RequestBody PollCreationDto newPoll){
+    public ResponseEntity createNewPoll(@RequestBody PollCreationDto newPoll){
         SlackManager slackManager = new SlackManager();
+
+        String question = newPoll.getQuestion();
+        List<String> answers =newPoll.getOptions();
+        boolean InvalidAnswers = false;
+
+        if(question.length() == 0 || question.length() == 75)
+        {
+            return ResponseEntity.badRequest().build();
+        }
+        for(String answer : answers)
+        {
+            if(answer.length() == 0 || answer.length() > 75) return ResponseEntity.badRequest().build();
+        }
+        
         slackManager.PostInitialMessage(newPoll.getChannelId(),newPoll.getQuestion(),newPoll.getOptions(),newPoll.getOwnerId(),newPoll.getOwnerName(),newPoll.getOwnerUserName(),newPoll.getProperties());
 
 
-        return "Poll created successfully";
+        return ResponseEntity.ok("Poll Created successfully");
     }
 }
