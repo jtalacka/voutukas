@@ -88,7 +88,7 @@ public class CustomAPIController {
         {
             if(answer.length() == 0 || answer.length() > 75) return ResponseEntity.badRequest().build();
         }
-        
+
         slackManager.PostInitialMessage(newPoll.getChannelId(),newPoll.getQuestion(),newPoll.getOptions(),newPoll.getOwnerId(),newPoll.getOwnerName(),newPoll.getOwnerUserName(),newPoll.getProperties());
 
 
