@@ -1,6 +1,7 @@
 package application.business;
 
 import application.models.CreatePollOptions;
+import application.models.PrivateMetadata;
 import com.github.seratch.jslack.Slack;
 import com.github.seratch.jslack.api.methods.SlackApiException;
 import com.github.seratch.jslack.api.methods.request.users.UsersIdentityRequest;
@@ -126,7 +127,7 @@ public class SlackManager {
                 .close(ViewClose.builder().type("plain_text").text("Close").build())
                 .notifyOnClose(false)
                 .blocks(blocks)
-                .privateMetadata(GsonFactory.createSnakeCase().toJson(new CreatePollOptions(), CreatePollOptions.class))
+                .privateMetadata(GsonFactory.createSnakeCase().toJson(new PrivateMetadata(new CreatePollOptions(),channelId), PrivateMetadata.class))
                 .build();
 
         try {
@@ -161,7 +162,8 @@ public class SlackManager {
 
         View payloadView = payload.getView();
         String actionId = payload.getActions().get(0).getActionId();
-        CreatePollOptions options = GsonFactory.createSnakeCase().fromJson(payload.getView().getPrivateMetadata(), CreatePollOptions.class);
+        CreatePollOptions options = GsonFactory.createSnakeCase().fromJson(payload.getView().getPrivateMetadata(), PrivateMetadata.class).options;
+        String channelId=GsonFactory.createSnakeCase().fromJson(payload.getView().getPrivateMetadata(), PrivateMetadata.class).channelId;
 
         List<LayoutBlock> newBlocks;
 
@@ -188,7 +190,7 @@ public class SlackManager {
             default:
                 newBlocks = payload.getView().getBlocks();
         }
-        payloadView.setPrivateMetadata(GsonFactory.createSnakeCase().toJson(options, CreatePollOptions.class));
+        payloadView.setPrivateMetadata(GsonFactory.createSnakeCase().toJson(new PrivateMetadata(options,channelId), PrivateMetadata.class));
         sendViewUpdate(newBlocks, payloadView);
         return "";
     }
@@ -269,7 +271,8 @@ public class SlackManager {
         stateValuesList.forEach(i -> questionOptions.add(i.values().stream().findFirst().get().getValue()));
 
         //Current poll options
-        CreatePollOptions pollOptions = GsonFactory.createSnakeCase().fromJson(payload.getView().getPrivateMetadata(), CreatePollOptions.class);
+        CreatePollOptions pollOptions = GsonFactory.createSnakeCase().fromJson(payload.getView().getPrivateMetadata(), PrivateMetadata.class).options;
+        String channelId=GsonFactory.createSnakeCase().fromJson(payload.getView().getPrivateMetadata(), PrivateMetadata.class).channelId;
         //Display Initial Message
         Message message = new Message(slack,token);
 
