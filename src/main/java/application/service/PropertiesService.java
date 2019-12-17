@@ -13,7 +13,7 @@ import java.util.List;
 public class PropertiesService {
 
     private PropertiesRepository propertiesRepository;
-    private PropertiesMapper propertiesMapper = new PropertiesMapper();
+    private final PropertiesMapper propertiesMapper = new PropertiesMapper();
 
     public PropertiesService(PropertiesRepository propertiesRepository) {
         this.propertiesRepository = propertiesRepository;

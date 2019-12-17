@@ -1,11 +1,12 @@
 package application.service;
 
 import application.Repositories.OptionRepository;
+import application.Repositories.PollRepository;
 import application.domain.Option;
 import application.domain.Poll;
-import application.domain.PollID;
 import application.dto.OptionDto;
 import application.mapper.OptionMapper;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,10 +18,12 @@ public class OptionService {
 
     private OptionRepository optionRepository;
     private OptionMapper optionMapper = new OptionMapper();
+    private PollRepository pollRepository;
 
-    public OptionService(OptionRepository optionRepository) {
+    public OptionService(OptionRepository optionRepository, PollRepository pollRepository) {
         this.optionRepository = optionRepository;
         this.optionMapper = optionMapper;
+        this.pollRepository = pollRepository;
     }
 
     public OptionDto findOptionById(int id){
@@ -32,14 +35,12 @@ public class OptionService {
     }
 
     public List<OptionDto> findAllPollOptions(String timeStamp, String channelId){
-        return convertToDtoList(optionRepository.findAllOptionsByPollID(new Poll(new PollID(timeStamp,channelId))));
+        return convertToDtoList(optionRepository.findAllOptionsByPollID(new Poll(pollRepository.getId(timeStamp,channelId))));
     }
 
     private List<OptionDto> convertToDtoList(List<Option> optionList){
         List<OptionDto> optionDtoList = new ArrayList<>();
-        optionList.forEach(option -> {
-            optionDtoList.add(optionMapper.map(option));
-        });
+        optionList.forEach(option -> optionDtoList.add(optionMapper.map(option)));
         return optionDtoList;
     }
 
@@ -49,7 +50,7 @@ public class OptionService {
 
     public OptionDto findOptionByPollIdAndOptionName(String timeStamp, String channelId, String optionName){
         return optionMapper.map(optionRepository.findPollOptionsByPollIdAndOptionText(
-                new Poll(new PollID(timeStamp,channelId)),
+                new Poll(pollRepository.getId(timeStamp,channelId)),
                 optionName
         ));
     }
@@ -60,13 +61,18 @@ public class OptionService {
     }
 
     @Transactional
+    public void deleteOption(OptionDto optionDto){
+        optionRepository.delete(optionMapper.map(optionDto));
+    }
+
+    @Transactional
     public void deleteOptionsByPollID(String timestamp, String channelID){
-        optionRepository.deletePollOptionsByPollID(new Poll(new PollID(timestamp,channelID)));
+        optionRepository.deletePollOptionsByPollID(new Poll(pollRepository.getId(timestamp,channelID)));
     }
 
     @Transactional
     public void deleteOptionByPollIdAndOptionName(String timeStamp, String channelID, String optionName){
-        optionRepository.deletePollOptionsByPollIdAndOptionText(new Poll(new PollID(timeStamp,channelID)),optionName);
+        optionRepository.deletePollOptionsByPollIdAndOptionText(new Poll(pollRepository.getId(timeStamp,channelID)),optionName);
     }
 
     @Transactional
@@ -79,9 +85,8 @@ public class OptionService {
         return saveOption(optionMapper.map(optionDto));
     }
 
-    @Transactional
     private OptionDto saveOption(Option option){
-        optionRepository.saveAndFlush(option);
+        optionRepository.save(option);
         return findOptionById(option.getId());
     }
 

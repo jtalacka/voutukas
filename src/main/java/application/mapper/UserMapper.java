@@ -1,25 +1,26 @@
 package application.mapper;
 
-import application.domain.Option;
 import application.domain.User;
-import application.dto.OptionDto;
 import application.dto.UserDto;
 import org.modelmapper.ModelMapper;
-import org.springframework.stereotype.Component;
 
 
 public class UserMapper {
 
-    ModelMapper modelMapper = new ModelMapper();
+    private final ModelMapper modelMapper = new ModelMapper();
 
-    public User map(UserDto UserDto){
-        User User = modelMapper.map(UserDto, User.class);
-        return User;
+    public User map(UserDto userDto){
+        User user = modelMapper.map(userDto, User.class);
+        user.setFullName(userDto.getFullName());
+        user.setSlackName(userDto.getSlackName());
+        return user;
     }
 
-    public UserDto map(User User){
-        UserDto UserDto = modelMapper.map(User, UserDto.class);
-        return UserDto;
+    public UserDto map(User user){
+        UserDto userDto = modelMapper.map(user, UserDto.class);
+        userDto.setFullName(user.getFullName());
+        userDto.setSlackName(user.getSlackName());
+        return userDto;
     }
 
 }

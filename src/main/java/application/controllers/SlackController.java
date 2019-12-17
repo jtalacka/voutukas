@@ -8,16 +8,13 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("slack")
 public class SlackController {
-    private SlackManager slackManager;
+    private final SlackManager slackManager;
 
     public SlackController(){
         slackManager = new SlackManager();
@@ -38,11 +35,20 @@ public class SlackController {
             case SlackManager.ACTION_BLOCK_ACTION:
                 return slackManager.handleBlockAction(jsonResponse);
             case SlackManager.ACTION_VIEW_SUBMISSION:
-                return slackManager.handleViewSubmission(jsonResponse);
+                TimerTask task = new TimerTask() {
+                    public void run() {
+                        slackManager.handleViewSubmission(jsonResponse);
+                };};
+                    Timer timer = new Timer("Timer");
+                    long delay  = 0;
+                    timer.schedule(task, delay);
+                return  "";
         }
 
         return "";
     }
+
+
 
     private List<String> ListOfInputText(String text)
     {

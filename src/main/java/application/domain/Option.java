@@ -16,24 +16,20 @@ import java.util.Set;
 public class Option {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private int id;
 
-
-    @ManyToMany(fetch = FetchType.LAZY)
+    @EqualsAndHashCode.Exclude
+    @ToString.Exclude
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "answers",
             joinColumns = { @JoinColumn(name = "option_id") },
             inverseJoinColumns = { @JoinColumn(name = "user_id") })
-    @EqualsAndHashCode.Exclude
-    @ToString.Exclude
     private Set<User> answers = new HashSet<>();
 
 
+
     @ManyToOne(fetch=FetchType.EAGER)
-    @JoinColumns({
-            @JoinColumn(name = "poll_id_channel_id"),
-            @JoinColumn(name = "poll_id_time_stamp")
-    })
     private Poll poll;
 
     @Column(name = "option_text", length = 3000)
