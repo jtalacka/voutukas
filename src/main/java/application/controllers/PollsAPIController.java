@@ -63,7 +63,7 @@ public class PollsAPIController {
     public ResponseEntity deletePollById(@RequestParam String time_stamp, @RequestParam String channel_id)
     {
         System.out.println("hello");
-        /*pollService.deletePollById(time_stamp, channel_id);
+        pollService.deletePollById(time_stamp, channel_id);
         Slack slack = new Slack();
         try {
             slack.methods(System.getenv("SLACK_API_ACCESS_TOKEN")).chatDelete(ChatDeleteRequest.builder()
@@ -73,17 +73,15 @@ public class PollsAPIController {
         } catch (IOException | SlackApiException e) {
             e.printStackTrace();
             return ResponseEntity.badRequest().build();
-        }*/
+        }
         return ResponseEntity.ok().build();
     }
 
-    /*
+    //Su šituo metodu bėda su preflight requestais susitvarko, nežinom kodėl :/
     @DeleteMapping(value = "/delete", consumes = {MediaType.APPLICATION_JSON_VALUE,MediaType.APPLICATION_XML_VALUE})
     public ResponseEntity mockDelete(@RequestHeader("Access-Control-Request-Method") String accessControl){
-        //System.out.println(accessControl);
-        System.out.println("Second delete method");
         return ResponseEntity.ok().build();
-    }*/
+    }
 
     @PutMapping(value = "/poll", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<PollDto> PutPoll(@RequestBody PollDto pollDto)
